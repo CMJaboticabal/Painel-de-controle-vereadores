@@ -176,14 +176,7 @@ class TelaPlenario(QMainWindow):
         # Capitalizar primeira letra
         date_str = date_str[0].upper() + date_str[1:] if date_str else ""
         
-        # Sessão (Pega o nome definido pelo admin)
-        session_name = ""
-        if hasattr(self, 'session_config'):
-             session_name = self.session_config.get_session_name() or "SESSÃO"
-        else:
-             session_name = "SESSÃO"
-        
-        self.header_label.setText(f"{session_name}   •   {date_str}")
+        self.header_label.setText(date_str)
     
     def move_to_second_monitor(self):
         """Mover janela para segundo monitor se disponível"""

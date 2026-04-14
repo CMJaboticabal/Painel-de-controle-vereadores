@@ -22,7 +22,7 @@ Layout:
 import os
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QProgressBar, QSizePolicy,
+    QLabel, QProgressBar, QSizePolicy, QStackedWidget
 )
 from PySide6.QtCore import Qt, QTimer, Slot, QDate
 from PySide6.QtGui import QPixmap, QScreen
@@ -126,11 +126,59 @@ class TelaPlenarioLateral(QMainWindow):
         self._h_namezone = h_namezone
 
         # ── Raiz ──────────────────────────────────────────
-        root = QWidget()
-        root.setStyleSheet("background: transparent;")
-        self.setCentralWidget(root)
+        self.stack = QStackedWidget()
+        self.stack.setStyleSheet("background: transparent;")
+        self.setCentralWidget(self.stack)
 
-        main_h = QHBoxLayout(root)
+        # ══════════════════════════════════════════════════
+        #  PÁGINA 0 — MODO STANDBY (Centralizado Clássico)
+        # ══════════════════════════════════════════════════
+        page_sby = QWidget()
+        sby_v = QVBoxLayout(page_sby)
+        sby_v.setContentsMargins(30, 10, 30, 20)
+        sby_v.setSpacing(5)
+
+        # Top Header (Data)
+        self.sby_header_label = QLabel()
+        self.sby_header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sby_header_label.setStyleSheet("""
+            QLabel {
+                font-size: 24px;
+                color: rgba(255, 255, 255, 0.9);
+                font-weight: 500;
+                padding: 8px 20px;
+                background: rgba(0, 0, 0, 0.4);
+                border-radius: 15px;
+            }
+        """)
+        sby_v.addWidget(self.sby_header_label)
+        sby_v.addStretch(1)
+
+        # Brasão
+        self.sby_logo_label = QLabel()
+        self.sby_logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sby_logo_label.setFixedSize(450, 450)
+        self.sby_logo_label.setStyleSheet("border: none; background: transparent;")
+        sby_v.addWidget(self.sby_logo_label, 0, Qt.AlignmentFlag.AlignCenter)
+
+        # Título da Sessão
+        self.sby_session_name_label = QLabel("")
+        self.sby_session_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sby_v.addWidget(self.sby_session_name_label)
+
+        # Câmara
+        self.sby_city_label = QLabel("")
+        self.sby_city_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sby_v.addWidget(self.sby_city_label)
+
+        sby_v.addStretch(1)
+        self.stack.addWidget(page_sby)
+
+        # ══════════════════════════════════════════════════
+        #  PÁGINA 1 — MODO ORADOR (Lateral)
+        # ══════════════════════════════════════════════════
+        page_lat = QWidget()
+        main_h = QHBoxLayout(page_lat)
         main_h.setContentsMargins(0, 0, 0, 0)
         main_h.setSpacing(0)
 
@@ -289,6 +337,7 @@ class TelaPlenarioLateral(QMainWindow):
         right_v.addStretch(3)
 
         main_h.addWidget(right_col, 1)
+        self.stack.addWidget(page_lat)
 
         self.showFullScreen()
         self.update_header()
@@ -315,8 +364,17 @@ class TelaPlenarioLateral(QMainWindow):
     # ──────────────────────────────────────────────────────
     def update_header(self):
         """
-        Header: nome da sessão em maiúsculas + apenas o ANO (sem data completa, sem emoji).
+        Header Lateral: nome da sessão em maiúsculas + apenas o ANO.
+        Header Standby: apenas a data por extenso.
         """
+        # Header Standby Clássico (Top Bar)
+        from PySide6.QtCore import QLocale
+        locale = QLocale(QLocale.Portuguese, QLocale.Brazil)
+        date_str = locale.toString(QDate.currentDate(), "dddd, d 'de' MMMM 'de' yyyy")
+        date_str = date_str[0].upper() + date_str[1:] if date_str else ""
+        self.sby_header_label.setText(date_str)
+
+        # Header Lateral (Direita Topo)
         session_name = ""
         if hasattr(self, "session_config"):
             session_name = (self.session_config.get_session_name() or "SESSÃO").upper()
@@ -360,8 +418,9 @@ class TelaPlenarioLateral(QMainWindow):
     #  Estados: Sessão × Orador
     # ──────────────────────────────────────────────────────
     def show_session_info(self):
-        """Tela de espera — exibe logo e dados da câmara."""
+        """Tela de espera genérica — exibe logo e dados da câmara no esquema clássico (Standby Page)."""
         self.timer_container.setVisible(False)
+        self.stack.setCurrentIndex(0) # Muda para o layout Standby
 
         logo_path = self.session_config.get_logo()
         if logo_path:
@@ -371,34 +430,37 @@ class TelaPlenarioLateral(QMainWindow):
                     abs_logo = self.session_config.get_bundle_path(logo_path)
                 logo_path = abs_logo
             if os.path.exists(logo_path):
-                w = self.foto_label.width()  or 400
-                h = self.foto_label.height() or 800
-                self.foto_label.setPixmap(
+                self.sby_logo_label.setPixmap(
                     QPixmap(logo_path).scaled(
-                        w, h,
+                        450, 450,
                         Qt.AspectRatioMode.KeepAspectRatio,
                         Qt.TransformationMode.SmoothTransformation,
                     )
                 )
-                self.foto_label.setStyleSheet("background: transparent; border: none;")
             else:
-                self.set_placeholder_photo()
+                self.sby_logo_label.clear()
         else:
-            self.set_placeholder_photo()
+            self.sby_logo_label.clear()
 
-        session_number = self.session_config.get_session_number()
+        session_number = (self.session_config.get_session_name() or "SESSÃO").upper()
         city = (self.session_config.get_city_name() or "").upper()
-        text = session_number if session_number else (f"CÂMARA MUNICIPAL DE {city}" if city else "CÂMARA MUNICIPAL")
         
-        if hasattr(self, '_f_name_max'):
-            self._apply_dynamic_text(self.nome_partido_label, text, self._f_name_max, self._right_w, self._h_namezone, extra_pad_x=self._col_padding)
-        else:
-            self.nome_partido_label.setText(text)
+        # O nome da sessão vai ficar grandão no meio
+        max_w = self.screen().geometry().width() - 100
+        self._apply_dynamic_text(self.sby_session_name_label, session_number, 90, max_w, 150, extra_pad_x=0)
+        self.sby_session_name_label.setStyleSheet(self.sby_session_name_label.styleSheet() + "background: rgba(0, 40, 80, 0.6); border-radius: 10px; padding: 0px 40px; margin: 5px 0;")
+        
+        # A cidade vai ficar embaixo
+        city_text = f"CÂMARA MUNICIPAL DE {city}" if city else "CÂMARA MUNICIPAL"
+        self._apply_dynamic_text(self.sby_city_label, city_text, 48, max_w, 80, extra_pad_x=0)
+        self.sby_city_label.setStyleSheet(self.sby_city_label.styleSheet() + "color: #dddddd; text-transform: uppercase; letter-spacing: 2px;")
 
     def show_vereador_info(self):
-        """Restaurar layout de orador."""
+        """Restaurar layout de orador (Lateral Page)."""
         self.timer_started = True
         self.timer_container.setVisible(True)
+        self.stack.setCurrentIndex(1) # Muda para o layout Lateral
+        
         if self.current_vereador:
             self.update_vereador(self.current_vereador)
         else:

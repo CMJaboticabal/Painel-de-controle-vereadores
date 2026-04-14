@@ -77,7 +77,8 @@ def get_session_info():
     config = SessionConfig()
     return jsonify({
         'session_name': config.get_session_name(),
-        'session_number': config.get_session_name() # Fallback de compatibilidade
+        'session_number': config.get_session_name(), # Fallback de compatibilidade
+        'website_url': config.get_website_url()
     })
 
 @app.route('/api/session/colors')

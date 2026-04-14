@@ -151,7 +151,7 @@
             <div class="bar middle-bar" id="vereador-nome"></div>
 
             <!-- Camada 3: Website -->
-            <div class="bar bottom-bar">
+            <div class="bar bottom-bar" id="website-url">
                 www.sinop.mt.leg.br
             </div>
         </div>
@@ -191,16 +191,24 @@
                 .then(data => {
                     const rawName = data.session_name || data.session_number || "";
                     sessionText = rawName.trim() || "SESSÃO ORDINÁRIA";
+                    
+                    const websiteUrl = data.website_url || "www.sinop.mt.leg.br";
+                    document.getElementById('website-url').textContent = websiteUrl;
+                    
                     console.log("Sessão carregada:", sessionText);
                     updateDisplay();
                 })
                 .catch(err => console.error("Erro ao carregar info da sessão:", err));
         }
 
-        function updateDisplay(nome = null) {
+        function updateDisplay(nome = null, partido = null) {
             // Só atualiza nome se passado explicitamente (pode ser string vazia)
             if (nome !== null) {
-                nomeEl.textContent = nome;
+                if (nome && partido && partido.trim() !== "") {
+                    nomeEl.textContent = `${nome} - ${partido}`;
+                } else {
+                    nomeEl.textContent = nome;
+                }
             }
 
             // Garante que sessionText tenha valor
@@ -264,7 +272,7 @@
 
             console.log('Evento: speaker_selected', data);
             if (data && data.speaker) {
-                updateDisplay(data.speaker.nome);
+                updateDisplay(data.speaker.nome, data.speaker.partido);
                 hasSpeaker = true;
             } else {
                 updateDisplay("");
@@ -302,7 +310,7 @@
                     loadSessionInfo();
 
                     if (state.speaker) {
-                        updateDisplay(state.speaker.nome);
+                        updateDisplay(state.speaker.nome, state.speaker.partido);
                         hasSpeaker = true;
                     } else {
                         hasSpeaker = false;
@@ -330,7 +338,7 @@
         if (isTestMode) {
             console.log("MODO TESTE ATIVADO");
             setTimeout(() => {
-                nomeEl.textContent = "VEREADOR DE TESTE";
+                nomeEl.textContent = "VEREADOR DE TESTE - PT";
                 sessionText = "SESSÃO DE TESTE";
                 hasSpeaker = true;
                 isTimerRunning = true;

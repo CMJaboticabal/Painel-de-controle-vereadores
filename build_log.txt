@@ -1,8 +1,8 @@
-174 INFO: PyInstaller: 6.12.0, contrib hooks: 2025.1
-174 INFO: Python: 3.13.2
-197 INFO: Platform: Windows-11-10.0.26200-SP0
-197 INFO: Python environment: C:\Users\caiqu\AppData\Local\Programs\Python\Python313
-201 INFO: Module search paths (PYTHONPATH):
+329 INFO: PyInstaller: 6.12.0, contrib hooks: 2025.1
+329 INFO: Python: 3.13.2
+355 INFO: Platform: Windows-11-10.0.26200-SP0
+356 INFO: Python environment: C:\Users\caiqu\AppData\Local\Programs\Python\Python313
+360 INFO: Module search paths (PYTHONPATH):
 ['C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\pyinstaller.exe',
  'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\python313.zip',
  'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\DLLs',
@@ -11,110 +11,111 @@
  'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages',
  'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\setuptools\\_vendor',
  'C:\\Users\\caiqu\\github\\Painel de controle']
-558 INFO: Appending 'datas' from .spec
-559 INFO: checking Analysis
-583 INFO: Building because hiddenimports changed
-583 INFO: Running Analysis Analysis-00.toc
-584 INFO: Target bytecode optimization level: 0
-584 INFO: Initializing module dependency graph...
-586 INFO: Initializing module graph hook caches...
-701 INFO: Analyzing modules for base_library.zip ...
-1928 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-5141 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-7589 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-10408 INFO: Caching module dependency graph...
-10470 INFO: Looking for Python shared library...
-10485 INFO: Using Python shared library: C:\Users\caiqu\AppData\Local\Programs\Python\Python313\python313.dll
-10486 INFO: Analyzing C:\Users\caiqu\github\Painel de controle\main.py
-10583 INFO: Processing standard module hook 'hook-PySide6.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-10849 INFO: Processing standard module hook 'hook-shiboken6.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-10854 INFO: Processing standard module hook 'hook-PySide6.QtNetwork.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-11429 INFO: Processing standard module hook 'hook-PySide6.QtWidgets.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-11629 INFO: Processing standard module hook 'hook-PySide6.QtCore.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-11902 INFO: Processing standard module hook 'hook-PySide6.QtGui.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-14272 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-14277 INFO: SetuptoolsInfo: initializing cached setuptools info...
-17652 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-17997 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-20964 INFO: Processing standard module hook 'hook-cryptography.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-22118 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
-23328 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-23800 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-24891 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-25538 INFO: Processing standard module hook 'hook-jinja2.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-27261 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-27263 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
-27290 INFO: Processing standard module hook 'hook-setuptools.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-27378 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-27519 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-27521 INFO: Setuptools: 'jaraco.functools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.functools'!
-27558 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-27561 INFO: Setuptools: 'more_itertools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.more_itertools'!
-28121 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-28163 INFO: Processing standard module hook 'hook-packaging.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-28512 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-28513 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
-28544 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-28547 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-28549 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-28550 INFO: Setuptools: 'jaraco.context' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.context'!
-28590 INFO: Processing pre-safe-import-module hook 'hook-backports.tarfile.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-28591 INFO: Setuptools: 'backports.tarfile' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.backports.tarfile'!
-28859 INFO: Processing standard module hook 'hook-backports.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-29793 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-29794 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
-30816 INFO: Processing standard module hook 'hook-pkg_resources.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-31196 INFO: Processing pre-safe-import-module hook 'hook-platformdirs.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-31227 INFO: Processing standard module hook 'hook-platformdirs.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-31812 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-31813 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
-32506 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-32509 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-32510 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
-34416 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-34784 INFO: Processing standard module hook 'hook-certifi.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-37659 INFO: Processing module hooks (post-graph stage)...
-39334 INFO: Performing binary vs. data reclassification (156 entries)
-40388 INFO: Looking for ctypes DLLs
-40404 WARNING: Ignoring /System/Library/Frameworks/IOKit.framework/IOKit imported from C:\Users\caiqu\AppData\Local\Programs\Python\Python313\Lib\site-packages\serial\tools\list_ports_osx.py - only basenames are supported with ctypes imports!
-40404 WARNING: Ignoring /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation imported from C:\Users\caiqu\AppData\Local\Programs\Python\Python313\Lib\site-packages\serial\tools\list_ports_osx.py - only basenames are supported with ctypes imports!
-40495 INFO: Analyzing run-time hooks ...
-40499 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-40517 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-40534 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-40552 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
-40567 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-40583 INFO: Including run-time hook 'pyi_rth_pkgres.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-40605 INFO: Including run-time hook 'pyi_rth_pyside6.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-40623 INFO: Processing pre-find-module-path hook 'hook-_pyi_rth_utils.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
-40639 INFO: Processing standard module hook 'hook-_pyi_rth_utils.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
-40684 INFO: Creating base_library.zip...
-40740 INFO: Looking for dynamic libraries
-41852 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\shiboken6']
-41852 INFO: Extra DLL search directories (PATH): ['C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PySide6']
-43794 INFO: Warnings written to C:\Users\caiqu\github\Painel de controle\build\PainelControle\warn-PainelControle.txt
-43887 INFO: Graph cross-reference written to C:\Users\caiqu\github\Painel de controle\build\PainelControle\xref-PainelControle.html
-43986 INFO: checking PYZ
-44015 INFO: Building because toc changed
-44015 INFO: Building PYZ (ZlibArchive) C:\Users\caiqu\github\Painel de controle\build\PainelControle\PYZ-00.pyz
-45214 INFO: Building PYZ (ZlibArchive) C:\Users\caiqu\github\Painel de controle\build\PainelControle\PYZ-00.pyz completed successfully.
-45251 INFO: checking PKG
-45266 INFO: Building because toc changed
-45267 INFO: Building PKG (CArchive) PainelControle.pkg
-45365 INFO: Building PKG (CArchive) PainelControle.pkg completed successfully.
-45367 INFO: Bootloader C:\Users\caiqu\AppData\Local\Programs\Python\Python313\Lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
-45367 INFO: checking EXE
-45386 INFO: Building because icon changed
-45386 INFO: Building EXE from EXE-00.toc
-45388 INFO: Copying bootloader EXE to C:\Users\caiqu\github\Painel de controle\build\PainelControle\PainelControle.exe
-45472 INFO: Copying icon to EXE
-45535 INFO: Copying 0 resources to EXE
-45535 INFO: Embedding manifest in EXE
-46308 INFO: Appending PKG archive to EXE
-46399 INFO: Fixing EXE headers
-49393 INFO: Building EXE from EXE-00.toc completed successfully.
-49398 INFO: checking COLLECT
-49416 INFO: Removing dir C:\Users\caiqu\github\Painel de controle\dist\PainelControle
-49639 INFO: Building COLLECT COLLECT-00.toc
-52087 INFO: Building COLLECT COLLECT-00.toc completed successfully.
-52096 INFO: Build complete! The results are available in: C:\Users\caiqu\github\Painel de controle\dist
+1483 INFO: Appending 'datas' from .spec
+1486 INFO: checking Analysis
+1504 INFO: Building because hiddenimports changed
+1504 INFO: Running Analysis Analysis-00.toc
+1505 INFO: Target bytecode optimization level: 0
+1505 INFO: Initializing module dependency graph...
+1507 INFO: Initializing module graph hook caches...
+1598 INFO: Analyzing modules for base_library.zip ...
+2686 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+4665 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+6076 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+7412 INFO: Caching module dependency graph...
+7436 INFO: Looking for Python shared library...
+7447 INFO: Using Python shared library: C:\Users\caiqu\AppData\Local\Programs\Python\Python313\python313.dll
+7447 INFO: Analyzing C:\Users\caiqu\github\Painel de controle\main.py
+7496 INFO: Processing standard module hook 'hook-PySide6.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+7703 INFO: Processing standard module hook 'hook-shiboken6.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+7705 INFO: Processing standard module hook 'hook-PySide6.QtNetwork.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+8088 INFO: Processing standard module hook 'hook-PySide6.QtWidgets.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+8227 INFO: Processing standard module hook 'hook-PySide6.QtCore.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+8395 INFO: Processing standard module hook 'hook-PySide6.QtGui.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+9668 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+9671 INFO: SetuptoolsInfo: initializing cached setuptools info...
+12551 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+12680 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+14550 INFO: Processing standard module hook 'hook-cryptography.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+15589 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+16671 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+17091 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+17997 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+18500 INFO: Processing standard module hook 'hook-jinja2.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+20086 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+20088 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+20113 INFO: Processing standard module hook 'hook-setuptools.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+20190 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+20321 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+20323 INFO: Setuptools: 'jaraco.functools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.functools'!
+20356 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+20358 INFO: Setuptools: 'more_itertools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.more_itertools'!
+20867 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+20906 INFO: Processing standard module hook 'hook-packaging.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+21214 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+21216 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
+21245 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+21249 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+21254 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+21255 INFO: Setuptools: 'jaraco.context' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.context'!
+21293 INFO: Processing pre-safe-import-module hook 'hook-backports.tarfile.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+21295 INFO: Setuptools: 'backports.tarfile' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.backports.tarfile'!
+21541 INFO: Processing standard module hook 'hook-backports.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+22378 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+22381 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+23234 INFO: Processing standard module hook 'hook-pkg_resources.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+23590 INFO: Processing pre-safe-import-module hook 'hook-platformdirs.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+23624 INFO: Processing standard module hook 'hook-platformdirs.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+24106 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+24108 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+24788 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+24793 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+24795 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+26467 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+26784 INFO: Processing standard module hook 'hook-certifi.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+29287 INFO: Analyzing hidden import 'engineio.async_drivers.threading'
+29314 INFO: Processing module hooks (post-graph stage)...
+30794 INFO: Performing binary vs. data reclassification (156 entries)
+31847 INFO: Looking for ctypes DLLs
+31865 WARNING: Ignoring /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation imported from C:\Users\caiqu\AppData\Local\Programs\Python\Python313\Lib\site-packages\serial\tools\list_ports_osx.py - only basenames are supported with ctypes imports!
+31865 WARNING: Ignoring /System/Library/Frameworks/IOKit.framework/IOKit imported from C:\Users\caiqu\AppData\Local\Programs\Python\Python313\Lib\site-packages\serial\tools\list_ports_osx.py - only basenames are supported with ctypes imports!
+31959 INFO: Analyzing run-time hooks ...
+31963 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+31979 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+31996 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+32009 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+32023 INFO: Including run-time hook 'pyi_rth_pkgres.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+32043 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+32060 INFO: Including run-time hook 'pyi_rth_pyside6.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+32076 INFO: Processing pre-find-module-path hook 'hook-_pyi_rth_utils.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+32091 INFO: Processing standard module hook 'hook-_pyi_rth_utils.py' from 'C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PyInstaller\\hooks'
+32131 INFO: Creating base_library.zip...
+32188 INFO: Looking for dynamic libraries
+33288 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\shiboken6']
+33288 INFO: Extra DLL search directories (PATH): ['C:\\Users\\caiqu\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\PySide6']
+35171 INFO: Warnings written to C:\Users\caiqu\github\Painel de controle\build\PainelControle\warn-PainelControle.txt
+35257 INFO: Graph cross-reference written to C:\Users\caiqu\github\Painel de controle\build\PainelControle\xref-PainelControle.html
+35346 INFO: checking PYZ
+35364 INFO: Building because toc changed
+35364 INFO: Building PYZ (ZlibArchive) C:\Users\caiqu\github\Painel de controle\build\PainelControle\PYZ-00.pyz
+36469 INFO: Building PYZ (ZlibArchive) C:\Users\caiqu\github\Painel de controle\build\PainelControle\PYZ-00.pyz completed successfully.
+36516 INFO: checking PKG
+36533 INFO: Building because toc changed
+36533 INFO: Building PKG (CArchive) PainelControle.pkg
+36623 INFO: Building PKG (CArchive) PainelControle.pkg completed successfully.
+36624 INFO: Bootloader C:\Users\caiqu\AppData\Local\Programs\Python\Python313\Lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
+36624 INFO: checking EXE
+36640 INFO: Building because toc changed
+36640 INFO: Building EXE from EXE-00.toc
+36642 INFO: Copying bootloader EXE to C:\Users\caiqu\github\Painel de controle\build\PainelControle\PainelControle.exe
+36711 INFO: Copying icon to EXE
+36775 INFO: Copying 0 resources to EXE
+36775 INFO: Embedding manifest in EXE
+37525 INFO: Appending PKG archive to EXE
+37631 INFO: Fixing EXE headers
+39656 INFO: Building EXE from EXE-00.toc completed successfully.
+39665 INFO: checking COLLECT
+39688 INFO: Removing dir C:\Users\caiqu\github\Painel de controle\dist\PainelControle
+39952 INFO: Building COLLECT COLLECT-00.toc
+42142 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+42152 INFO: Build complete! The results are available in: C:\Users\caiqu\github\Painel de controle\dist

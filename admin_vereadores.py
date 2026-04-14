@@ -545,6 +545,18 @@ class VereadoresAdminDialog(QDialog):
         self.city_input.setPlaceholderText("Ex: SINOP")
         sessao_layout.addRow("Nome da Cidade:", self.city_input)
         
+        self.website_input = QLineEdit()
+        self.website_input.setObjectName("txtWebsiteUrl")
+        self.website_input.setText(self.session_config.get_website_url())
+        self.website_input.setPlaceholderText("Ex: www.sinop.mt.leg.br")
+        sessao_layout.addRow("Site (Lower Third):", self.website_input)
+        
+        # Botão de Backup
+        btn_backup = QPushButton("📦 Exportar Backup Config (.json)")
+        btn_backup.setStyleSheet("background-color: #f39c12; color: white; padding: 10px; font-weight: bold; border-radius: 5px;")
+        btn_backup.clicked.connect(self.exportar_backup)
+        sessao_layout.addRow("", btn_backup)
+        
         # Logo
         logo_layout = QHBoxLayout()
         self.logo_path_label = QLabel(self.session_config.get_logo() or "Nenhuma logo selecionada")
@@ -557,6 +569,51 @@ class VereadoresAdminDialog(QDialog):
         
         sessao_group.setLayout(sessao_layout)
         layout.addWidget(sessao_group)
+        
+        # --- SEÇÃO TELA SECUNDÁRIA ---
+        tela_group = QGroupBox("🖥️ Tela Secundária (Monitor 2)")
+        tela_layout = QFormLayout()
+        tela_layout.setSpacing(15)
+        
+        self.combo_screen_type = QComboBox()
+        self.combo_screen_type.setObjectName("comboScreenType")
+        self.combo_screen_type.addItem("🖥️  Tela Plenário Padrão (clássica)", "plenario")
+        self.combo_screen_type.addItem("🖼️  Layout Lateral (foto + nome + cronômetro)", "lateral")
+        
+        # Restaurar seleção salva
+        current_type = self.session_config.get_secondary_screen_type()
+        idx = self.combo_screen_type.findData(current_type)
+        if idx >= 0:
+            self.combo_screen_type.setCurrentIndex(idx)
+        
+        self.combo_screen_type.setMinimumHeight(40)
+        self.combo_screen_type.setStyleSheet("""
+            QComboBox {
+                background: #1a1a2e;
+                color: white;
+                border: 1px solid #303050;
+                padding: 8px 14px;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 30px;
+            }
+            QComboBox QAbstractItemView {
+                background: #162447;
+                color: white;
+                selection-background-color: #e94560;
+            }
+        """)
+        tela_layout.addRow("Tipo de Tela:", self.combo_screen_type)
+        
+        tela_note = QLabel("A seleção é salva automaticamente ao clicar em 'Salvar Configurações'.")
+        tela_note.setStyleSheet("color: rgba(200,200,255,0.6); font-size: 12px; font-style: italic;")
+        tela_layout.addRow(tela_note)
+        
+        tela_group.setLayout(tela_layout)
+        layout.addWidget(tela_group)
         
         # --- SEÇÃO CONEXÕES ---
         connections_group = QGroupBox("🔌 Status de Conexões")
@@ -829,8 +886,24 @@ class VereadoresAdminDialog(QDialog):
                     arduino.cut_audio()
             else:
                  QMessageBox.warning(self, "Aviso", "Arduino desconectado! Conecte primeiro.")
+                 
+    def exportar_backup(self):
+        """Exportar o arquivo session_config.json para backup"""
+        import shutil
+        from datetime import datetime
+        default_name = f"backup_config_tribuna_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        save_path, _ = QFileDialog.getSaveFileName(self, "Salvar Backup de Configuração", default_name, "JSON Files (*.json)")
+        
+        if save_path:
+            try:
+                # Force save before export just in case
+                self.salvar_configuracoes(show_msg=False)
+                shutil.copy2(self.session_config.config_path, save_path)
+                QMessageBox.information(self, "Sucesso", f"Backup das configurações salvo em:\\n{save_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Erro", f"Erro ao exportar backup:\\n{e}")
     
-    def salvar_configuracoes(self):
+    def salvar_configuracoes(self, show_msg=True):
         """Salva sessão e cores"""
         
         # Debug: Listar line edits (ajuda a ver duplicatas)
@@ -862,6 +935,11 @@ class VereadoresAdminDialog(QDialog):
         city_text = input_city.text().strip() if input_city else self.city_input.text().strip()
         temp_conf.set_city_name(city_text)
         
+        # Buscar Website
+        input_web = self.findChild(QLineEdit, "txtWebsiteUrl")
+        web_text = input_web.text().strip() if input_web else getattr(self, 'website_input', QLineEdit()).text().strip()
+        temp_conf.set_website_url(web_text)
+        
         # Atualizar local
         self.session_config.load_config()
         
@@ -883,7 +961,13 @@ class VereadoresAdminDialog(QDialog):
         new_presets = [inp.value() for inp in self.preset_inputs]
         self.session_config.set_time_presets(new_presets)
         
-        QMessageBox.information(self, "Sucesso", "Configurações salvas com sucesso!")
+        # Salvar Tipo de Tela Secundária
+        screen_type = self.combo_screen_type.currentData()
+        if screen_type:
+            self.session_config.set_secondary_screen_type(screen_type)
+        
+        if show_msg:
+            QMessageBox.information(self, "Sucesso", "Configurações salvas com sucesso!")
         self.session_updated.emit()
 
     def create_lists_tab(self):

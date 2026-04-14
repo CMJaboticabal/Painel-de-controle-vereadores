@@ -91,6 +91,12 @@ class SessionConfig:
                 # Presets de Tempo (Minutos)
                 self.time_presets = data.get('time_presets', [1, 2, 3, 5, 10, 15])
                 
+                # Tipo de tela secundária: 'plenario' | 'lateral'
+                self.secondary_screen_type = data.get('secondary_screen_type', 'plenario')
+                
+                # Website da Lower Third
+                self.website_url = data.get('website_url', 'www.sinop.mt.leg.br')
+                
         except FileNotFoundError:
             self.logo_path = None
             self.session_name = ''
@@ -105,6 +111,8 @@ class SessionConfig:
             }
             self.arduino_port = None
             self.time_presets = [1, 2, 3, 5, 10, 15]
+            self.secondary_screen_type = 'plenario'
+            self.website_url = 'www.sinop.mt.leg.br'
             self.save_config()
     
     def save_config(self):
@@ -116,7 +124,9 @@ class SessionConfig:
             'active_list': self.active_list,
             'colors': self.colors,
             'arduino_port': self.arduino_port,
-            'time_presets': self.time_presets
+            'time_presets': self.time_presets,
+            'secondary_screen_type': self.secondary_screen_type,
+            'website_url': getattr(self, 'website_url', 'www.sinop.mt.leg.br'),
         }
         print(f"DEBUG: Gravando JSON session_name='{self.session_name}'")
         with open(self.config_path, 'w', encoding='utf-8') as f:
@@ -200,6 +210,22 @@ class SessionConfig:
     def get_time_presets(self):
         """Obter presets de tempo"""
         return self.time_presets
+
+    def set_secondary_screen_type(self, screen_type: str):
+        """Salvar tipo de tela secundária ('plenario' ou 'lateral')"""
+        self.secondary_screen_type = screen_type
+        self.save_config()
+
+    def get_secondary_screen_type(self) -> str:
+        """Obter tipo de tela secundária salvo"""
+        return getattr(self, 'secondary_screen_type', 'plenario')
+
+    def set_website_url(self, url: str):
+        self.website_url = url
+        self.save_config()
+
+    def get_website_url(self) -> str:
+        return getattr(self, 'website_url', 'www.sinop.mt.leg.br')
 
     def get_data_path(self, relative_path=None):
         """Retorna o caminho absoluto na pasta de dados do usuário"""

@@ -21,6 +21,7 @@ import socket
 from arduino_controller import ArduinoController
 from admin_vereadores import VereadoresAdminDialog
 from tela_plenario import TelaPlenario
+from tela_plenario_lateral import TelaPlenarioLateral
 import urllib.request
 import urllib.error
 import threading
@@ -113,6 +114,7 @@ class PainelPresidente(QMainWindow):
         
         # Tela do Plenário (Monitor 2)
         self.tela_plenario = None
+        self.tela_plenario_lateral = None  # Layout alternativo: foto à lateral
         
         # Dialog de administração
         self.admin_dialog = None
@@ -160,7 +162,10 @@ class PainelPresidente(QMainWindow):
 
         # Abrir Tela do Plenário automaticamente (agora, em paralelo)
         print("DEBUG: Abrindo tela do plenário...")
-        self.open_tela_plenario()
+        if self.session_config.get_secondary_screen_type() == 'lateral':
+            self.open_tela_plenario_lateral()
+        else:
+            self.open_tela_plenario()
         print("DEBUG: Inicialização completa!")
 
     def on_arduino_connection_finished(self, connected):
@@ -246,7 +251,8 @@ class PainelPresidente(QMainWindow):
                     Qt.TransformationMode.SmoothTransformation
                 )
                 x = (scaled.width() - foto_w) // 2
-                y = (scaled.height() - foto_h) // 2
+                # O recorte (crop) começa no topo da imagem (y=0) para não cortar a cabeça do orador
+                y = 0
                 cropped = scaled.copy(x, y, foto_w, foto_h)
                 foto_label.setPixmap(cropped)
                 foto_label.setFixedSize(foto_w, foto_h)
@@ -498,9 +504,8 @@ class PainelPresidente(QMainWindow):
             }
         """)
         layout.addWidget(self.btn_admin)
-        
+
         layout.addStretch()
-        layout.addWidget(self.btn_admin)
         
         layout.addStretch()
         group.setLayout(layout)
@@ -890,11 +895,11 @@ class PainelPresidente(QMainWindow):
             card_layout = QVBoxLayout(card)
             card_layout.setContentsMargins(8, 8, 8, 8)
             card_layout.setSpacing(6)
-            card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            card_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
             # Foto — o recorte dinâmico será feito em _update_card_sizes
             foto_label = QLabel()
-            foto_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            foto_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             foto_label.setStyleSheet("border: none; background: transparent;")
             foto_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
@@ -1247,12 +1252,13 @@ class PainelPresidente(QMainWindow):
         
         # Enviar para Servidor (API)
         api_post('timer', {'action': 'start', 'remaining': self.remaining_seconds, 'total': self.total_seconds})
-        
+
         # Sincronizar com tela do plenário
         # FORÇAR VISUAL DE ORADOR AGORA (Garante transição imediata)
-        if self.tela_plenario:
-            self.tela_plenario.show_vereador_info()
-            
+        for tela in [self.tela_plenario, self.tela_plenario_lateral]:
+            if tela:
+                tela.show_vereador_info()
+
         self.sync_tela_plenario()
     
     def show_warning(self, title, message):
@@ -1506,9 +1512,10 @@ class PainelPresidente(QMainWindow):
         
         # Sincronizar com tela do plenário
         self.sync_tela_plenario()
-        
-        if self.tela_plenario:
-            self.tela_plenario.reset_timer_state()
+
+        for tela in [self.tela_plenario, self.tela_plenario_lateral]:
+            if tela:
+                tela.reset_timer_state()
     
     def update_timer(self):
         """Atualizar cronômetro"""
@@ -1819,16 +1826,32 @@ class PainelPresidente(QMainWindow):
         self.rebuild_preset_buttons()
         self.update_presets_state() # Garantir estado habilitado/desabilitado correto
 
-        if self.tela_plenario:
-            # Recarregar configuração da sessão
-            self.tela_plenario.session_config.load_config()
-            # Atualizar Topo (Header)
-            self.tela_plenario.update_header()
-            # Se ainda não iniciou, atualizar tela
-            if not self.tela_plenario.timer_started:
-                self.tela_plenario.show_session_info()
-            print("✅ Configuração da sessão atualizada na tela do plenário")
+        # Gerenciar janelas: alternar plenario/lateral se houver alteração
+        target_type = self.session_config.get_secondary_screen_type()
         
+        if target_type == 'lateral':
+            if self.tela_plenario:
+                self.tela_plenario.close()
+                self.tela_plenario = None
+            if not self.tela_plenario_lateral:
+                self.open_tela_plenario_lateral()
+        else:
+            if self.tela_plenario_lateral:
+                self.tela_plenario_lateral.close()
+                self.tela_plenario_lateral = None
+            if not self.tela_plenario:
+                self.open_tela_plenario()
+
+        for tela in [self.tela_plenario, self.tela_plenario_lateral]:
+            if tela:
+                tela.session_config.load_config()
+                tela.update_header()
+                if not tela.timer_started:
+                    tela.show_session_info()
+                    
+        self.sync_tela_plenario()
+        print("✅ Configuração da sessão atualizada nas telas do plenário")
+
         # Avisar clientes web (Lower Third)
         api_post('config_update', {})
 
@@ -1872,42 +1895,60 @@ class PainelPresidente(QMainWindow):
             self.presets_layout.addWidget(btn, i // 3, i % 3)
             self.preset_buttons.append((btn, seconds))
     
+    def open_secondary_screen(self):
+        """Abre a tela secundária configurada no admin"""
+        if self.session_config.get_secondary_screen_type() == 'lateral':
+            self.open_tela_plenario_lateral()
+        else:
+            self.open_tela_plenario()
+
     def open_tela_plenario(self):
-        """Abrir tela do plenário (Monitor 2)"""
+        """Abrir tela do plenário (Monitor 2) — layout padrão"""
         if not self.tela_plenario:
             self.tela_plenario = TelaPlenario()
             self.tela_plenario.show()
-            print("✅ Tela do Plenário aberta")
+            print("✅ Tela do Plenário aberta (layout padrão)")
+
+    def open_tela_plenario_lateral(self):
+        """Abrir tela do plenário (Monitor 2) — layout com foto lateral"""
+        if not self.tela_plenario_lateral:
+            self.tela_plenario_lateral = TelaPlenarioLateral()
+            self.tela_plenario_lateral.show()
+            print("✅ Tela do Plenário aberta (layout lateral)")
     
     def sync_tela_plenario(self):
-        """Sincronizar dados com tela do plenário"""
-        if self.tela_plenario:
+        """Sincronizar dados com ambas as telas do plenário"""
+        for tela in [self.tela_plenario, self.tela_plenario_lateral]:
+            if tela is None:
+                continue
             # Atualizar vereador (Usa o live_vereador que é a verdade atual)
             if self.live_vereador:
-                self.tela_plenario.update_vereador(self.live_vereador)
+                tela.update_vereador(self.live_vereador)
             elif self.selected_vereador and not self.is_running:
                  # Fallback para preview se parado
-                 self.tela_plenario.update_vereador(self.selected_vereador)
-            
+                 tela.update_vereador(self.selected_vereador)
+
             # Atualizar timer (Passar total para barra de progresso e flag de aparte)
-            self.tela_plenario.update_timer(self.remaining_seconds, self.total_seconds, self.is_parte_mode)
-            
+            tela.update_timer(self.remaining_seconds, self.total_seconds, self.is_parte_mode)
+
             # Atualizar status
-            self.tela_plenario.update_status(self.is_running)
+            tela.update_status(self.is_running)
     
     def closeEvent(self, event):
         """Evento de fechamento da janela"""
         # Parar timer
         if self.is_running:
             self.stop_timer()
-        
+
         # Desconectar Arduino
         self.arduino.disconnect()
-        
-        # Fechar tela do plenário
+
+        # Fechar telas do plenário
         if self.tela_plenario:
             self.tela_plenario.close()
-        
+        if self.tela_plenario_lateral:
+            self.tela_plenario_lateral.close()
+
         # Servidor roda em thread daemon, será encerrado automaticamente
         event.accept()
 

@@ -110,10 +110,20 @@ class TelaPlenarioLateral(QMainWindow):
         f_timer   = min(f_timer, int(SH * 0.25))                 # teto: 25% SH
 
         self._f_timer = f_timer   # guardado para estilos dinâmicos
+        
+        # Guardados para ajuste dinâmico de texto longo
+        self._f_session_max = f_session
+        self._f_year_max = f_year
+        self._f_name_max = f_name
+        self._right_w = right_w
+        self._col_padding = COL_PADDING
 
         # ── Alturas das zonas ──────────────────────────────
         h_header   = int(SH * 0.26)   # título + ano + espaço para stripe do PNG
         h_namezone = int(SH * 0.22)   # nome | partido (2 linhas possíveis)
+        
+        self._h_header = h_header
+        self._h_namezone = h_namezone
 
         # ── Raiz ──────────────────────────────────────────
         root = QWidget()
@@ -312,8 +322,12 @@ class TelaPlenarioLateral(QMainWindow):
             session_name = (self.session_config.get_session_name() or "SESSÃO").upper()
         year = str(QDate.currentDate().year())
 
-        self.header_session_label.setText(session_name)
-        self.header_year_label.setText(year)
+        if hasattr(self, '_f_session_max'):
+            self._apply_dynamic_text(self.header_session_label, session_name, self._f_session_max, self._right_w, self._h_header - self._f_year_max - 20)
+            self.header_year_label.setText(year)
+        else:
+            self.header_session_label.setText(session_name)
+            self.header_year_label.setText(year)
 
     def move_to_second_monitor(self):
         screens = QScreen.virtualSiblings(self.screen())
@@ -374,12 +388,12 @@ class TelaPlenarioLateral(QMainWindow):
 
         session_number = self.session_config.get_session_number()
         city = (self.session_config.get_city_name() or "").upper()
-        if session_number:
-            self.nome_partido_label.setText(session_number)
+        text = session_number if session_number else (f"CÂMARA MUNICIPAL DE {city}" if city else "CÂMARA MUNICIPAL")
+        
+        if hasattr(self, '_f_name_max'):
+            self._apply_dynamic_text(self.nome_partido_label, text, self._f_name_max, self._right_w, self._h_namezone, extra_pad_x=self._col_padding)
         else:
-            self.nome_partido_label.setText(
-                f"CÂMARA MUNICIPAL DE {city}" if city else "CÂMARA MUNICIPAL"
-            )
+            self.nome_partido_label.setText(text)
 
     def show_vereador_info(self):
         """Restaurar layout de orador."""
@@ -408,10 +422,13 @@ class TelaPlenarioLateral(QMainWindow):
             partido = (vereador.get("partido") or "").upper()
 
             # Mesma linha, mesma fonte, com word wrap automático
-            if partido:
-                self.nome_partido_label.setText(f"{nome}  |  {partido}")
+            texto = f"{nome}  |  {partido}" if partido else nome
+            
+            if hasattr(self, '_f_name_max'):
+                self._apply_dynamic_text(self.nome_partido_label, texto, self._f_name_max, self._right_w, self._h_namezone, extra_pad_x=self._col_padding)
             else:
-                self.nome_partido_label.setText(nome)
+                self.nome_partido_label.setText(texto)
+            
             self.nome_partido_label.repaint()
 
             foto_rel = vereador.get("foto")
@@ -497,3 +514,50 @@ class TelaPlenarioLateral(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:
             self.close()
+
+    # ──────────────────────────────────────────────────────
+    #  Ajuste Dinâmico de Fontes
+    # ──────────────────────────────────────────────────────
+    def _apply_dynamic_text(self, label: QLabel, text: str, max_font_px: int, max_w: int, max_h: int, extra_pad_x: int = 60):
+        from PySide6.QtGui import QFont, QFontMetrics
+        
+        low = 12
+        high = max_font_px
+        best_size = low
+        
+        safe_w = max_w - extra_pad_x
+        safe_h = max_h - 10 # 10px safe margin vertically
+        
+        # Binary search for the best font size
+        while low <= high:
+            mid = (low + high) // 2
+            font = QFont("Arial Black")
+            font.setPixelSize(mid)
+            font.setWeight(QFont.Weight.Black)
+            fm = QFontMetrics(font)
+            
+            rect = fm.boundingRect(0, 0, safe_w, safe_h, Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignLeft, text)
+            
+            if rect.width() <= safe_w and rect.height() <= safe_h:
+                best_size = mid
+                low = mid + 1
+            else:
+                high = mid - 1
+                
+        # Baseado em qual label é, aplicamos paddings
+        pad_css = "padding: 0 30px;" if label == getattr(self, 'nome_partido_label', None) else ""
+        
+        css = f"""
+            QLabel {{
+                background: transparent;
+                border: none;
+                color: #ffffff;
+                font-size: {best_size}px;
+                font-weight: 900;
+                font-family: 'Arial Black', 'Segoe UI Black', sans-serif;
+                {pad_css}
+            }}
+        """
+        label.setStyleSheet(css)
+        label.setText(text)
+

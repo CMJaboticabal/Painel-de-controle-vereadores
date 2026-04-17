@@ -20,6 +20,7 @@ import csv
 import shutil
 import threading
 import requests
+import webbrowser
 from config import VERSION, GITHUB_REPO
 
 class VereadoresAdminDialog(QDialog):
@@ -178,6 +179,9 @@ class VereadoresAdminDialog(QDialog):
         
         # Aba 3: Listas
         self.tabs.addTab(self.create_lists_tab(), "📋 LISTAS")
+        
+        # Aba 4: Sobre
+        self.tabs.addTab(self.create_about_tab(), "ℹ️ SOBRE")
         
         main_layout.addWidget(self.tabs)
         self.setLayout(main_layout)
@@ -579,36 +583,6 @@ class VereadoresAdminDialog(QDialog):
         content = QWidget()
         layout = QVBoxLayout(content)
         layout.setSpacing(30)
-        
-        # --- SEÇÃO ATUALIZAÇÃO ---
-        update_group = QGroupBox("🔄 Atualização do Sistema")
-        update_layout = QVBoxLayout()
-        
-        self.version_label = QLabel(f"Versão Atual: {VERSION}")
-        self.version_label.setStyleSheet("font-size: 15px; font-weight: bold; color: #4facfe;")
-        update_layout.addWidget(self.version_label)
-        
-        self.update_status_label = QLabel("Checando atualizações...")
-        self.update_status_label.setStyleSheet("color: #aaa; font-style: italic;")
-        update_layout.addWidget(self.update_status_label)
-        
-        btn_check_update = QPushButton("Verificar Agora")
-        btn_check_update.clicked.connect(self.check_updates_manual)
-        btn_check_update.setFixedWidth(200)
-        
-        self.btn_download_update = QPushButton("📥 BAIXAR E ATUALIZAR AGORA")
-        self.btn_download_update.clicked.connect(self.download_and_install_update)
-        self.btn_download_update.setStyleSheet("background-color: #27ae60; color: white; padding: 12px; font-size: 14px;")
-        self.btn_download_update.setVisible(False)
-        
-        btn_row = QHBoxLayout()
-        btn_row.addWidget(btn_check_update)
-        btn_row.addWidget(self.btn_download_update)
-        btn_row.addStretch()
-        
-        update_layout.addLayout(btn_row)
-        update_group.setLayout(update_layout)
-        layout.addWidget(update_group)
         
         # --- SEÇÃO DADOS DA SESSÃO ---
         sessao_group = QGroupBox("📅 Dados da Sessão")
@@ -1866,4 +1840,170 @@ class VereadoresAdminDialog(QDialog):
             from PySide6.QtCore import QMetaObject, Q_ARG
             # Re-habilitar botão via signal ou similar
     
-    shutdown_trigger = Signal()
+    def create_about_tab(self):
+        """Aba Informativa e de Atualização"""
+        tab = QScrollArea()
+        tab.setWidgetResizable(True)
+        tab.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        
+        content = QWidget()
+        layout = QVBoxLayout(content)
+        layout.setSpacing(25)
+        
+        # --- HEADER PREMIUM ---
+        header = QFrame()
+        header.setFixedHeight(180)
+        header.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
+                    stop:0 #1a1a2e, stop:1 #16213e);
+                border: 2px solid rgba(79, 172, 254, 0.3);
+                border-radius: 20px;
+            }
+        """)
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(30, 0, 30, 0)
+        
+        # Mensagem de Boas-vindas
+        welcome_text = QVBoxLayout()
+        title = QLabel("Painel de Controle Tribuna")
+        title.setStyleSheet("font-size: 32px; font-weight: 900; color: #4facfe; border: none; background: transparent;")
+        
+        subtitle = QLabel("Sistema Profissional de Gestão de Plenário")
+        subtitle.setStyleSheet("font-size: 16px; color: rgba(255, 255, 255, 0.6); border: none; background: transparent;")
+        
+        welcome_text.addStretch()
+        welcome_text.addWidget(title)
+        welcome_text.addWidget(subtitle)
+        welcome_text.addStretch()
+        
+        header_layout.addLayout(welcome_text)
+        header_layout.addStretch()
+        
+        # Versão em destaque
+        v_box = QVBoxLayout()
+        v_label = QLabel(f"v{VERSION}")
+        v_label.setStyleSheet("font-size: 40px; font-weight: 800; color: white; border: none; background: transparent;")
+        v_sub = QLabel("Versão Estável")
+        v_sub.setAlignment(Qt.AlignmentFlag.AlignRight)
+        v_sub.setStyleSheet("color: #4facfe; font-weight: bold; border: none; background: transparent;")
+        v_box.addStretch()
+        v_box.addWidget(v_label)
+        v_box.addWidget(v_sub)
+        v_box.addStretch()
+        header_layout.addLayout(v_box)
+        
+        layout.addWidget(header)
+        
+        # --- SEÇÃO DESENVOLVEDOR ---
+        dev_group = QGroupBox("👤 Desenvolvedor")
+        dev_layout = QHBoxLayout()
+        dev_layout.setContentsMargins(25, 30, 25, 30)
+        dev_layout.setSpacing(25)
+        
+        dev_info = QVBoxLayout()
+        dev_name = QLabel("CARLOS H ALMEIDA")
+        dev_name.setStyleSheet("font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: 1px;")
+        
+        dev_role = QLabel("Desenvolvedor Full Stack & Especialista em Sistemas Legislativos")
+        dev_role.setStyleSheet("font-size: 14px; color: rgba(255, 255, 255, 0.7);")
+        
+        btn_github = QPushButton("🌐 github.com/almeidasinop")
+        btn_github.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_github.setFixedWidth(280)
+        btn_github.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #24292e, stop:1 #2b3137);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: white;
+                padding: 12px;
+                font-weight: bold;
+                border-radius: 10px;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background: #4facfe;
+                border-color: #4facfe;
+            }
+        """)
+        btn_github.clicked.connect(lambda: webbrowser.open("https://github.com/almeidasinop"))
+        
+        dev_info.addWidget(dev_name)
+        dev_info.addWidget(dev_role)
+        dev_info.addSpacing(15)
+        dev_info.addWidget(btn_github)
+        
+        # Simula uma foto/brasão do dev
+        dev_badge = QLabel("💻")
+        dev_badge.setFixedSize(110, 110)
+        dev_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        dev_badge.setStyleSheet("""
+            QLabel {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #4facfe, stop:1 #00f2fe);
+                border-radius: 55px;
+                font-size: 55px;
+                border: 4px solid rgba(255, 255, 255, 0.1);
+            }
+        """)
+        
+        dev_layout.addWidget(dev_badge)
+        dev_layout.addLayout(dev_info)
+        dev_layout.addStretch()
+        
+        dev_group.setLayout(dev_layout)
+        layout.addWidget(dev_group)
+        
+        # --- SEÇÃO ATUALIZAÇÃO (MOVIDA) ---
+        update_group = QGroupBox("🔄 Atualização do Sistema")
+        update_layout = QVBoxLayout()
+        update_layout.setContentsMargins(25, 25, 25, 25)
+        update_layout.setSpacing(20)
+        
+        self.version_label = QLabel(f"Versão Instalada: v{VERSION}")
+        self.version_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4facfe;")
+        update_layout.addWidget(self.version_label)
+        
+        self.update_status_label = QLabel("Checando atualizações...")
+        self.update_status_label.setStyleSheet("color: rgba(255, 255, 255, 0.5); font-style: italic; font-size: 14px;")
+        update_layout.addWidget(self.update_status_label)
+        
+        btn_check_update = QPushButton("💿 Verificar Agora")
+        btn_check_update.clicked.connect(self.check_updates_manual)
+        btn_check_update.setFixedWidth(220)
+        btn_check_update.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_check_update.setMinimumHeight(45)
+        
+        self.btn_download_update = QPushButton("🚀 BAIXAR E ATUALIZAR AGORA")
+        self.btn_download_update.clicked.connect(self.download_and_install_update)
+        self.btn_download_update.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_download_update.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #11998e, stop:1 #38ef7d);
+                color: white;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: 900;
+                border: none;
+                border-radius: 12px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0f877d, stop:1 #32d670);
+                margin-top: 1px;
+            }
+        """)
+        self.btn_download_update.setVisible(False)
+        self.btn_download_update.setMinimumHeight(60)
+        
+        btn_row = QHBoxLayout()
+        btn_row.addWidget(btn_check_update)
+        btn_row.addWidget(self.btn_download_update)
+        btn_row.addStretch()
+        
+        update_layout.addLayout(btn_row)
+        update_group.setLayout(update_layout)
+        layout.addWidget(update_group)
+        
+        layout.addStretch()
+        content.setLayout(layout)
+        tab.setWidget(content)
+        return tab

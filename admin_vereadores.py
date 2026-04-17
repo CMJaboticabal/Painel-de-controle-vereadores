@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QTabWidget, QColorDialog, QFrame, QScrollArea, QApplication,
     QComboBox, QGridLayout, QSpinBox
 )
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QPixmap, QIcon, QColor, QFont
 import csv
 import shutil

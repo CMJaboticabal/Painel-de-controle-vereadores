@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('fotos', 'fotos'), ('presets', 'presets'), ('templates', 'templates'), ('vereadores.json', '.'), ('session_config.json', '.'), ('GC GERAL.png', '.'), ('Manual_de_Hardware.html', '.')],
+    datas=[('fotos', 'fotos'), ('presets', 'presets'), ('templates', 'templates'), ('vereadores.json', '.'), ('session_config.json', '.'), ('GC GERAL.png', '.'), ('Manual_de_Hardware.html', '.'), ('modelo_vereadores.csv', '.')],
     hiddenimports=['simple_websocket', 'engineio.async_drivers.threading'],
     hookspath=[],
     hooksconfig={},

@@ -16,6 +16,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap, QIcon, QColor, QFont
+import csv
+import shutil
 
 class VereadoresAdminDialog(QDialog):
     """Dialog para administração de vereadores"""
@@ -217,6 +219,41 @@ class VereadoresAdminDialog(QDialog):
         btn_layout.addLayout(order_layout)
         
         btn_layout.addSpacing(20)
+
+        # Botão Importar CSV + Botão Baixar Modelo (lado a lado)
+        csv_row_layout = QHBoxLayout()
+        csv_row_layout.setSpacing(5)
+
+        self.btn_importar_csv = QPushButton("📥 Importar CSV")
+        self.btn_importar_csv.clicked.connect(self.importar_csv)
+        self.btn_importar_csv.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #f39c12, stop:1 #e67e22);
+            }
+        """)
+        csv_row_layout.addWidget(self.btn_importar_csv)
+
+        btn_modelo_csv = QPushButton("📋")
+        btn_modelo_csv.setFixedWidth(38)
+        btn_modelo_csv.setToolTip("Abrir arquivo modelo CSV (modelo_vereadores.csv)")
+        btn_modelo_csv.clicked.connect(self.abrir_modelo_csv)
+        btn_modelo_csv.setStyleSheet("""
+            QPushButton {
+                background-color: #2c3e50;
+                color: white;
+                border: 1px solid #f39c12;
+                border-radius: 5px;
+                font-size: 16px;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                background-color: #f39c12;
+            }
+        """)
+        csv_row_layout.addWidget(btn_modelo_csv)
+
+        btn_layout.addLayout(csv_row_layout)
         
         self.btn_config_sessao = QPushButton("⚙️ Configurar Sessão")
         self.btn_config_sessao.clicked.connect(self.config_sessao)
@@ -1338,6 +1375,131 @@ class VereadoresAdminDialog(QDialog):
             pixmap = QPixmap(dest_path)
             self.foto_label.setPixmap(pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
     
+    def importar_csv(self):
+        """Importar lista de vereadores de um arquivo CSV"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Selecionar CSV",
+            "",
+            "Arquivos CSV (*.csv)"
+        )
+        
+        if not file_path:
+            return
+            
+        # Perguntar se deve substituir ou adicionar
+        reply = QMessageBox.question(
+            self, "Modo de Importação",
+            "Deseja SUBSTITUIR a lista atual ou ADICIONAR os vereadores do CSV à lista existente?\n\n"
+            "Escolha 'Yes' para Substituir e 'No' para Adicionar.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel
+        )
+        
+        if reply == QMessageBox.StandardButton.Cancel:
+            return
+            
+        substituir = (reply == QMessageBox.StandardButton.Yes)
+        
+        try:
+            novos_vereadores = []
+            
+            with open(file_path, mode='r', encoding='utf-8-sig') as f:
+                # Tentar detectar o delimitador, padrão será ; 
+                # (ou podemos forçar ; e usar fallback pra , se não tiver ; na primeira linha)
+                first_line = f.readline()
+                f.seek(0)
+                delimiter = ';' if ';' in first_line else ','
+                
+                reader = csv.DictReader(f, delimiter=delimiter)
+                
+                # Normalizar cabeçalhos para letras minúsculas e sem espaços extras
+                headers = [h.strip().lower() for h in (reader.fieldnames or [])]
+                if not headers or 'nome' not in headers or 'partido' not in headers:
+                     QMessageBox.warning(self, "Erro", "CSV inválido. As colunas obrigatórias são 'nome' e 'partido'. A coluna 'foto' é opcional.")
+                     return
+                
+                reader.fieldnames = headers
+
+                if substituir:
+                    next_id = 1
+                else:
+                    next_id = max([v['id'] for v in self.vereadores], default=0) + 1
+                    
+                for row in reader:
+                    nome = row.get('nome', '').strip()
+                    partido = row.get('partido', '').strip()
+                    foto_path = row.get('foto', '').strip()
+                    
+                    if not nome or not partido:
+                        continue # Pular linhas inválidas
+                        
+                    novo_foto_rel = None
+                    if foto_path and os.path.exists(foto_path) and os.path.isfile(foto_path):
+                        # Copiar imagem local
+                        filename = os.path.basename(foto_path)
+                        dest_path = os.path.join(self.fotos_dir, filename)
+                        
+                        try:
+                            # Só copia se não for o mesmo arquivo
+                            if os.path.abspath(foto_path) != os.path.abspath(dest_path):
+                                shutil.copy2(foto_path, dest_path)
+                            novo_foto_rel = f"fotos/{filename}"
+                        except Exception as e:
+                            print(f"Erro ao copiar foto {foto_path}: {e}")
+                    
+                    novos_vereadores.append({
+                        'id': next_id,
+                        'nome': nome,
+                        'partido': partido.upper(),
+                        'foto': novo_foto_rel
+                    })
+                    next_id += 1
+            
+            if substituir:
+                self.vereadores = novos_vereadores
+            else:
+                self.vereadores.extend(novos_vereadores)
+                
+            self.save_vereadores()
+            self.populate_list()
+            self.cancelar_edicao()
+            
+            QMessageBox.information(self, "Sucesso", f"{len(novos_vereadores)} vereadores importados com sucesso!")
+            
+        except Exception as e:
+             QMessageBox.critical(self, "Erro na Importação", f"Ocorreu um erro ao processar o CSV:\n{e}")
+
+    def abrir_modelo_csv(self):
+        """Abre o arquivo modelo_vereadores.csv com o programa padrão do sistema"""
+        import subprocess
+        
+        # Tentar encontrar o modelo na pasta do bundle (executável) ou no diretório de trabalho
+        modelo_path = self.session_config.get_bundle_path("modelo_vereadores.csv")
+        
+        if not os.path.exists(modelo_path):
+            # Fallback: pasta onde o script está rodando
+            modelo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modelo_vereadores.csv")
+        
+        if os.path.exists(modelo_path):
+            try:
+                os.startfile(modelo_path)
+            except Exception as e:
+                # Fallback: abrir a pasta que contém o arquivo
+                try:
+                    subprocess.Popen(f'explorer /select,"{modelo_path}"')
+                except Exception as e2:
+                    QMessageBox.warning(self, "Erro", f"Não foi possível abrir o modelo:\n{e2}")
+        else:
+            QMessageBox.warning(
+                self, "Arquivo não encontrado",
+                "O arquivo modelo_vereadores.csv não foi encontrado.\n\n"
+                "Crie um arquivo CSV com as colunas:\n"
+                "  nome;partido;foto\n\n"
+                "Exemplo:\n"
+                "  João Silva;PSDB;\n"
+                "  Maria Santos;PT;C:\\fotos\\maria.jpg"
+            )
+
     def remover_foto(self):
         """Remover foto do vereador"""
         self.set_placeholder_photo()

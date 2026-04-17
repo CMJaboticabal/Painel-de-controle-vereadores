@@ -22,6 +22,9 @@ import threading
 import requests
 import webbrowser
 from config import VERSION, GITHUB_REPO
+import sys
+
+# resource_path removido em favor do SessionConfig.get_bundle_path
 
 class VereadoresAdminDialog(QDialog):
     """Dialog para administração de vereadores"""
@@ -1846,7 +1849,7 @@ class VereadoresAdminDialog(QDialog):
         
         # Logo Lado Esquerdo
         logo_label = QLabel()
-        logo_pix = QPixmap("fotos/logo.png")
+        logo_pix = QPixmap(self.session_config.get_bundle_path("fotos/logo.png"))
         if not logo_pix.isNull():
             logo_label.setPixmap(logo_pix.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         else:
@@ -1928,7 +1931,7 @@ class VereadoresAdminDialog(QDialog):
         # Foto Circular
         dev_photo_label = QLabel()
         dev_photo_label.setFixedSize(80, 80)
-        carlos_pix = QPixmap("fotos/carlos.jpeg")
+        carlos_pix = QPixmap(self.session_config.get_bundle_path("fotos/carlos.jpeg"))
         if not carlos_pix.isNull():
             size = 80
             circular_pix = QPixmap(size, size)

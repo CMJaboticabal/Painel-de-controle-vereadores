@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QComboBox, QGridLayout, QSpinBox
 )
 from PySide6.QtCore import Qt, Signal, QTimer
-from PySide6.QtGui import QPixmap, QIcon, QColor, QFont
+from PySide6.QtGui import QPixmap, QIcon, QColor, QFont, QPainterPath, QPainter, QBrush, QPen
 import csv
 import shutil
 import threading
@@ -849,30 +849,6 @@ class VereadoresAdminDialog(QDialog):
         btn_salvar_config.clicked.connect(self.salvar_configuracoes)
         btn_salvar_config.setStyleSheet("background-color: #3498db; padding: 15px; font-size: 16px;")
         layout.addWidget(btn_salvar_config)
-        
-        # --- ZONA DE PERIGO ---
-        danger_group = QGroupBox("⛔ Controle do Sistema")
-        danger_layout = QVBoxLayout()
-        
-        btn_shutdown = QPushButton("🛑 ENCERRAR SISTEMA COMPLETO")
-        btn_shutdown.setStyleSheet("""
-            QPushButton {
-                background-color: #c0392b;
-                color: white;
-                font-weight: bold;
-                padding: 15px;
-                font-size: 16px;
-                border-radius: 8px;
-            }
-            QPushButton:hover {
-                background-color: #e74c3c;
-            }
-        """)
-        btn_shutdown.clicked.connect(self.shutdown_system)
-        danger_layout.addWidget(btn_shutdown)
-        
-        danger_group.setLayout(danger_layout)
-        layout.addWidget(danger_group)
         
         layout.addStretch()
         
@@ -1844,169 +1820,312 @@ class VereadoresAdminDialog(QDialog):
             # Re-habilitar botão via signal ou similar
     
     def create_about_tab(self):
-        """Aba Informativa e de Atualização"""
-        tab = QScrollArea()
-        tab.setWidgetResizable(True)
-        tab.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        """Aba Informativa baseada na Imagine Soluções Digitais - Tema Escuro Padrão"""
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
         
-        content = QWidget()
-        layout = QVBoxLayout(content)
-        layout.setSpacing(25)
+        container = QWidget()
+        container.setStyleSheet("background-color: transparent;")
+        main_layout = QVBoxLayout(container)
+        main_layout.setContentsMargins(30, 30, 30, 30)
+        main_layout.setSpacing(25)
         
-        # --- HEADER PREMIUM ---
-        header = QFrame()
-        header.setFixedHeight(180)
-        header.setStyleSheet("""
+        # --- CARD SUPERIOR (BANNER) ---
+        banner_card = QFrame()
+        banner_card.setStyleSheet("""
             QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
-                    stop:0 #1a1a2e, stop:1 #16213e);
-                border: 2px solid rgba(79, 172, 254, 0.3);
+                background-color: rgba(26, 26, 46, 0.8);
                 border-radius: 20px;
+                border: 1px solid rgba(79, 172, 254, 0.3);
             }
         """)
-        header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(30, 0, 30, 0)
+        banner_layout = QHBoxLayout(banner_card)
+        banner_layout.setContentsMargins(30, 30, 30, 30)
+        banner_layout.setSpacing(25)
         
-        # Mensagem de Boas-vindas
-        welcome_text = QVBoxLayout()
-        title = QLabel("Painel de Controle Tribuna")
-        title.setStyleSheet("font-size: 32px; font-weight: 900; color: #4facfe; border: none; background: transparent;")
+        # Logo Lado Esquerdo
+        logo_label = QLabel()
+        logo_pix = QPixmap("fotos/logo.png")
+        if not logo_pix.isNull():
+            logo_label.setPixmap(logo_pix.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        else:
+            logo_label.setText("🏛️")
+            logo_label.setStyleSheet("font-size: 50px; background-color: #0984e3; color: white; border-radius: 15px; padding: 10px;")
+            logo_label.setFixedSize(100, 100)
+            logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        subtitle = QLabel("Sistema Profissional de Gestão de Plenário")
-        subtitle.setStyleSheet("font-size: 16px; color: rgba(255, 255, 255, 0.6); border: none; background: transparent;")
+        # Texto Título
+        title_vbox = QVBoxLayout()
+        sys_title = QLabel("Controle de Tribuna Parlamentar")
+        sys_title.setStyleSheet("font-size: 32px; font-weight: 800; color: #4facfe; border: none; background: transparent;")
         
-        welcome_text.addStretch()
-        welcome_text.addWidget(title)
-        welcome_text.addWidget(subtitle)
-        welcome_text.addStretch()
+        ver_row = QHBoxLayout()
+        ver_badge = QLabel(f" VERSÃO {VERSION} ")
+        ver_badge.setStyleSheet("""
+            background-color: #4facfe; 
+            color: #1a1a2e; 
+            border-radius: 8px; 
+            padding: 4px 10px; 
+            font-size: 13px; 
+            font-weight: 900;
+        """)
         
-        header_layout.addLayout(welcome_text)
-        header_layout.addStretch()
+        last_update = QLabel("Atualizado em Abril/2026")
+        last_update.setStyleSheet("color: rgba(255, 255, 255, 0.5); font-size: 14px; margin-left: 10px; border: none; background: transparent;")
         
-        # Versão em destaque
-        v_box = QVBoxLayout()
-        v_label = QLabel(f"v{VERSION}")
-        v_label.setStyleSheet("font-size: 40px; font-weight: 800; color: white; border: none; background: transparent;")
-        v_sub = QLabel("Versão Estável")
-        v_sub.setAlignment(Qt.AlignmentFlag.AlignRight)
-        v_sub.setStyleSheet("color: #4facfe; font-weight: bold; border: none; background: transparent;")
-        v_box.addStretch()
-        v_box.addWidget(v_label)
-        v_box.addWidget(v_sub)
-        v_box.addStretch()
-        header_layout.addLayout(v_box)
+        ver_row.addWidget(ver_badge)
+        ver_row.addWidget(last_update)
+        ver_row.addStretch()
         
-        layout.addWidget(header)
+        title_vbox.addWidget(sys_title)
+        title_vbox.addLayout(ver_row)
         
-        # --- SEÇÃO DESENVOLVEDOR ---
-        dev_group = QGroupBox("👤 Desenvolvedor")
-        dev_layout = QHBoxLayout()
-        dev_layout.setContentsMargins(25, 30, 25, 30)
-        dev_layout.setSpacing(25)
+        banner_layout.addWidget(logo_label)
+        banner_layout.addLayout(title_vbox)
+        banner_layout.addStretch()
         
-        dev_info = QVBoxLayout()
-        dev_name = QLabel("CARLOS H ALMEIDA")
-        dev_name.setStyleSheet("font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: 1px;")
+        main_layout.addWidget(banner_card)
         
-        dev_role = QLabel("Desenvolvedor Full Stack & Especialista em Sistemas Legislativos")
-        dev_role.setStyleSheet("font-size: 14px; color: rgba(255, 255, 255, 0.7);")
+        # --- SEÇÃO OBJETIVO ---
+        obj_card = QFrame()
+        obj_card.setStyleSheet("background-color: rgba(30, 30, 50, 0.5); border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.05);")
+        obj_vbox = QVBoxLayout(obj_card)
+        obj_vbox.setContentsMargins(25, 25, 25, 25)
         
-        btn_github = QPushButton("🌐 github.com/almeidasinop")
+        obj_label_title = QLabel("🎯 Objetivo do Sistema")
+        obj_label_title.setStyleSheet("font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 10px; border: none; background: transparent;")
+        obj_vbox.addWidget(obj_label_title)
+        
+        obj_text = QLabel(
+            "Desenvolvido para modernizar e organizar as sessões plenárias das Câmaras Municipais. "
+            "O sistema oferece controle profissional e preciso do tempo de fala dos parlamentares, "
+            "gerenciamento de apartes, integração física com a mesa diretora e exibição dinâmica em tempo real "
+            "para telões e transmissões ao vivo. Nosso foco é garantir total transparência, respeito ao regimento "
+            "interno e eficiência na condução dos trabalhos legislativos."
+        )
+        obj_text.setWordWrap(True)
+        obj_text.setStyleSheet("font-size: 16px; color: rgba(255, 255, 255, 0.8); line-height: 160%; border: none; background: transparent;")
+        obj_vbox.addWidget(obj_text)
+        main_layout.addWidget(obj_card)
+        
+        # --- GRID DE CARDS (DESENVOLVIMENTO E SUPORTE) ---
+        grid_layout = QHBoxLayout()
+        grid_layout.setSpacing(25)
+        
+        # Card 1: Desenvolvimento
+        dev_card = QFrame()
+        dev_card.setStyleSheet("background-color: rgba(22, 33, 62, 0.7); border-radius: 15px; border: 1px solid rgba(79, 172, 254, 0.2);")
+        dev_vbox = QVBoxLayout(dev_card)
+        dev_vbox.setContentsMargins(25, 25, 25, 25)
+        dev_vbox.setSpacing(15)
+        
+        dev_header = QLabel("</> DESENVOLVIMENTO")
+        dev_header.setStyleSheet("color: #4facfe; font-weight: 800; font-size: 13px; border: none; background: transparent;")
+        dev_vbox.addWidget(dev_header)
+        
+        dev_info_row = QHBoxLayout()
+        # Foto Circular
+        dev_photo_label = QLabel()
+        dev_photo_label.setFixedSize(80, 80)
+        carlos_pix = QPixmap("fotos/carlos.jpeg")
+        if not carlos_pix.isNull():
+            size = 80
+            circular_pix = QPixmap(size, size)
+            circular_pix.fill(Qt.GlobalColor.transparent)
+            painter = QPainter(circular_pix)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            path = QPainterPath()
+            path.addEllipse(0, 0, size, size)
+            painter.setClipPath(path)
+            painter.drawPixmap(0, 0, carlos_pix.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation))
+            painter.end()
+            dev_photo_label.setPixmap(circular_pix)
+        else:
+            dev_photo_label.setText("👤")
+            dev_photo_label.setStyleSheet("font-size: 40px; background-color: #1a1a2e; border-radius: 40px; color: white;")
+            dev_photo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        dev_text_vbox = QVBoxLayout()
+        dev_company = QLabel("Imagine Soluções Digitais")
+        dev_company.setStyleSheet("font-size: 18px; font-weight: 700; color: #ffffff; border: none; background: transparent;")
+        dev_name = QLabel("Carlos Almeida - CTO & Developer")
+        dev_name.setStyleSheet("font-size: 14px; color: rgba(255, 255, 255, 0.6); border: none; background: transparent;")
+        dev_text_vbox.addWidget(dev_company)
+        dev_text_vbox.addWidget(dev_name)
+        
+        dev_info_row.addWidget(dev_photo_label)
+        dev_info_row.addLayout(dev_text_vbox)
+        dev_info_row.addStretch()
+        dev_vbox.addLayout(dev_info_row)
+        
+        # Botões Dev
+        btn_row = QHBoxLayout()
+        btn_github = QPushButton(" GitHub")
         btn_github.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_github.setFixedWidth(280)
         btn_github.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #24292e, stop:1 #2b3137);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                color: white;
-                padding: 12px;
-                font-weight: bold;
-                border-radius: 10px;
-                font-size: 13px;
+                background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; 
+                padding: 10px; border-radius: 8px; font-weight: 600;
             }
-            QPushButton:hover {
-                background: #4facfe;
-                border-color: #4facfe;
-            }
+            QPushButton:hover { background-color: rgba(255, 255, 255, 0.15); border-color: #4facfe; }
         """)
         btn_github.clicked.connect(lambda: webbrowser.open("https://github.com/almeidasinop"))
         
-        dev_info.addWidget(dev_name)
-        dev_info.addWidget(dev_role)
-        dev_info.addSpacing(15)
-        dev_info.addWidget(btn_github)
-        
-        # Simula uma foto/brasão do dev
-        dev_badge = QLabel("💻")
-        dev_badge.setFixedSize(110, 110)
-        dev_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        dev_badge.setStyleSheet("""
-            QLabel {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #4facfe, stop:1 #00f2fe);
-                border-radius: 55px;
-                font-size: 55px;
-                border: 4px solid rgba(255, 255, 255, 0.1);
+        btn_site = QPushButton(" Site Oficial")
+        btn_site.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_site.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; 
+                padding: 10px; border-radius: 8px; font-weight: 600;
             }
+            QPushButton:hover { background-color: rgba(255, 255, 255, 0.15); border-color: #4facfe; }
         """)
+        btn_site.clicked.connect(lambda: webbrowser.open("https://imagineweb.dev/"))
         
-        dev_layout.addWidget(dev_badge)
-        dev_layout.addLayout(dev_info)
-        dev_layout.addStretch()
+        btn_row.addWidget(btn_github)
+        btn_row.addWidget(btn_site)
+        dev_vbox.addLayout(btn_row)
         
-        dev_group.setLayout(dev_layout)
-        layout.addWidget(dev_group)
+        # Card 2: Suporte Técnico
+        sup_card = QFrame()
+        sup_card.setStyleSheet("background-color: rgba(22, 33, 62, 0.7); border-radius: 15px; border: 1px solid rgba(79, 172, 254, 0.2);")
+        sup_vbox = QVBoxLayout(sup_card)
+        sup_vbox.setContentsMargins(25, 25, 25, 25)
+        sup_vbox.setSpacing(15)
         
-        # --- SEÇÃO ATUALIZAÇÃO (MOVIDA) ---
-        update_group = QGroupBox("🔄 Atualização do Sistema")
-        update_layout = QVBoxLayout()
-        update_layout.setContentsMargins(25, 25, 25, 25)
-        update_layout.setSpacing(20)
+        sup_header = QLabel("🎧 SUPORTE TÉCNICO")
+        sup_header.setStyleSheet("color: #4facfe; font-weight: 800; font-size: 13px; border: none; background: transparent;")
+        sup_vbox.addWidget(sup_header)
         
-        self.version_label = QLabel(f"Versão Instalada: v{VERSION}")
-        self.version_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4facfe;")
-        update_layout.addWidget(self.version_label)
+        sup_desc = QLabel("Precisa de ajuda com o sistema ou encontrou algum problema técnico? Estamos aqui para garantir o sucesso da sua sessão.")
+        sup_desc.setWordWrap(True)
+        sup_desc.setStyleSheet("font-size: 14px; color: rgba(255, 255, 255, 0.8); border: none; background: transparent;")
+        sup_vbox.addWidget(sup_desc)
         
-        self.update_status_label = QLabel("Checando atualizações...")
-        self.update_status_label.setStyleSheet("color: rgba(255, 255, 255, 0.5); font-style: italic; font-size: 14px;")
-        update_layout.addWidget(self.update_status_label)
+        sup_vbox.addStretch()
         
-        btn_check_update = QPushButton("💿 Verificar Agora")
-        btn_check_update.clicked.connect(self.check_updates_manual)
-        btn_check_update.setFixedWidth(220)
-        btn_check_update.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_check_update.setMinimumHeight(45)
-        
-        self.btn_download_update = QPushButton("🚀 BAIXAR E ATUALIZAR AGORA")
-        self.btn_download_update.clicked.connect(self.download_and_install_update)
-        self.btn_download_update.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_download_update.setStyleSheet("""
+        btn_sup_action = QPushButton("📩 Abrir Chamado no WhatsApp")
+        btn_sup_action.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_sup_action.setMinimumHeight(50)
+        btn_sup_action.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #11998e, stop:1 #38ef7d);
-                color: white;
-                padding: 15px;
-                font-size: 16px;
-                font-weight: 900;
-                border: none;
-                border-radius: 12px;
+                color: white; 
+                padding: 12px; border: none; border-radius: 10px; font-weight: 900; font-size: 15px;
             }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0f877d, stop:1 #32d670);
-                margin-top: 1px;
+            QPushButton:hover { filter: brightness(1.2); }
+        """)
+        whatsapp_url = "https://wa.me/5566996701140?text=Ol%C3%A1!%20Gostaria%20de%20saber%20sobre%20o%20painel%20de%20controle%20de%20tempo."
+        btn_sup_action.clicked.connect(lambda: webbrowser.open(whatsapp_url))
+        sup_vbox.addWidget(btn_sup_action)
+        
+        grid_layout.addWidget(dev_card, 1)
+        grid_layout.addWidget(sup_card, 1)
+        main_layout.addLayout(grid_layout)
+        
+        # --- SEÇÃO ATUALIZAÇÃO E CONTROLE (DESTAQUE) ---
+        control_card = QFrame()
+        control_card.setStyleSheet("""
+            QFrame {
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 15px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
             }
         """)
+        control_layout = QVBoxLayout(control_card)
+        control_layout.setContentsMargins(20, 20, 20, 20)
+        control_layout.setSpacing(15)
+        
+        # Linha de Atualização
+        up_row = QHBoxLayout()
+        self.update_status_label = QLabel(f"Sistema atualizado (v{VERSION})")
+        self.update_status_label.setStyleSheet("color: rgba(255, 255, 255, 0.6); font-size: 14px; border: none; background: transparent;")
+        
+        btn_check_update = QPushButton("🚀 Verificar Atualização")
+        btn_check_update.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_check_update.setFixedWidth(200)
+        btn_check_update.setMinimumHeight(40)
+        btn_check_update.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4facfe, stop:1 #00f2fe);
+                color: #1a1a2e;
+                font-weight: 800;
+                border-radius: 8px;
+                border: none;
+            }
+            QPushButton:hover { background: #4facfe; color: white; }
+        """)
+        btn_check_update.clicked.connect(self.check_updates_manual)
+        
+        self.btn_download_update = QPushButton("💿 ATUALIZAR AGORA")
         self.btn_download_update.setVisible(False)
-        self.btn_download_update.setMinimumHeight(60)
+        self.btn_download_update.clicked.connect(self.download_and_install_update)
+        self.btn_download_update.setMinimumHeight(40)
+        self.btn_download_update.setStyleSheet("""
+            QPushButton {
+                background-color: #27ae60; color: white; border-radius: 8px; font-weight: 900; border: none;
+            }
+            QPushButton:hover { background-color: #2ecc71; }
+        """)
         
-        btn_row = QHBoxLayout()
-        btn_row.addWidget(btn_check_update)
-        btn_row.addWidget(self.btn_download_update)
-        btn_row.addStretch()
+        up_row.addWidget(self.update_status_label)
+        up_row.addStretch()
+        up_row.addWidget(btn_check_update)
+        up_row.addWidget(self.btn_download_update)
+        control_layout.addLayout(up_row)
         
-        update_layout.addLayout(btn_row)
-        update_group.setLayout(update_layout)
-        layout.addWidget(update_group)
+        # Divisor
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setStyleSheet("background-color: rgba(255, 255, 255, 0.1); max-height: 1px;")
+        control_layout.addWidget(line)
         
-        layout.addStretch()
+        # Botão de Shutdown
+        btn_shutdown = QPushButton("🛑 ENCERRAR SISTEMA COMPLETO")
+        btn_shutdown.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_shutdown.setMinimumHeight(60)
+        btn_shutdown.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(231, 76, 60, 0.1);
+                color: #e74c3c;
+                border: 2px solid #e74c3c;
+                border-radius: 12px;
+                font-weight: 900;
+                font-size: 16px;
+                letter-spacing: 1px;
+            }
+            QPushButton:hover {
+                background-color: #e74c3c;
+                color: white;
+            }
+        """)
+        btn_shutdown.clicked.connect(self.shutdown_system)
+        control_layout.addWidget(btn_shutdown)
+        
+        main_layout.addWidget(control_card)
+        
+        # --- FOOTER ---
+        footer_layout = QHBoxLayout()
+        footer_layout.setContentsMargins(0, 10, 0, 0)
+        
+        security_badge = QLabel("🛡️ Ambiente Seguro. Conexão Local Criptografada.")
+        security_badge.setStyleSheet("""
+            background-color: rgba(227, 252, 239, 0.1); color: #38ef7d; border-radius: 6px; 
+            padding: 8px 12px; font-size: 11px; font-weight: 700; border: none;
+        """)
+        
+        copyright_label = QLabel("© 2026 Imagine Soluções Digitais.")
+        copyright_label.setStyleSheet("color: rgba(255, 255, 255, 0.2); font-size: 11px; border: none; background: transparent;")
+        
+        footer_layout.addWidget(security_badge)
+        footer_layout.addStretch()
+        footer_layout.addWidget(copyright_label)
+        
+        main_layout.addLayout(footer_layout)
+        
+        scroll.setWidget(container)
+        return scroll
         content.setLayout(layout)
         tab.setWidget(content)
         return tab

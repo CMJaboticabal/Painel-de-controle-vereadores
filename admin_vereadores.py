@@ -18,6 +18,9 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap, QIcon, QColor, QFont
 import csv
 import shutil
+import threading
+import requests
+from config import VERSION, GITHUB_REPO
 
 class VereadoresAdminDialog(QDialog):
     """Dialog para administração de vereadores"""
@@ -48,8 +51,20 @@ class VereadoresAdminDialog(QDialog):
         # Detectar IP Local para exibir na UI
         self.local_ip = self.get_local_ip()
         
+        # Info de Atualização
+        self.update_available = False
+        self.latest_version_url = None
+        
         self.init_ui()
         self.load_vereadores()
+        
+        # Iniciar verificação automática de atualização
+        QTimer.singleShot(1000, self.check_updates_auto)
+        
+        # Conectar sinais de atualização
+        self.update_trigger.connect(self.on_update_found)
+        self.no_update_trigger.connect(self.on_no_update)
+        self.shutdown_trigger.connect(self.shutdown_system)
         
     def get_local_ip(self):
         """Detecta o IP da máquina na rede local"""
@@ -564,6 +579,36 @@ class VereadoresAdminDialog(QDialog):
         content = QWidget()
         layout = QVBoxLayout(content)
         layout.setSpacing(30)
+        
+        # --- SEÇÃO ATUALIZAÇÃO ---
+        update_group = QGroupBox("🔄 Atualização do Sistema")
+        update_layout = QVBoxLayout()
+        
+        self.version_label = QLabel(f"Versão Atual: {VERSION}")
+        self.version_label.setStyleSheet("font-size: 15px; font-weight: bold; color: #4facfe;")
+        update_layout.addWidget(self.version_label)
+        
+        self.update_status_label = QLabel("Checando atualizações...")
+        self.update_status_label.setStyleSheet("color: #aaa; font-style: italic;")
+        update_layout.addWidget(self.update_status_label)
+        
+        btn_check_update = QPushButton("Verificar Agora")
+        btn_check_update.clicked.connect(self.check_updates_manual)
+        btn_check_update.setFixedWidth(200)
+        
+        self.btn_download_update = QPushButton("📥 BAIXAR E ATUALIZAR AGORA")
+        self.btn_download_update.clicked.connect(self.download_and_install_update)
+        self.btn_download_update.setStyleSheet("background-color: #27ae60; color: white; padding: 12px; font-size: 14px;")
+        self.btn_download_update.setVisible(False)
+        
+        btn_row = QHBoxLayout()
+        btn_row.addWidget(btn_check_update)
+        btn_row.addWidget(self.btn_download_update)
+        btn_row.addStretch()
+        
+        update_layout.addLayout(btn_row)
+        update_group.setLayout(update_layout)
+        layout.addWidget(update_group)
         
         # --- SEÇÃO DADOS DA SESSÃO ---
         sessao_group = QGroupBox("📅 Dados da Sessão")
@@ -1705,3 +1750,120 @@ class VereadoresAdminDialog(QDialog):
                 color: rgba(255, 255, 255, 0.3);
             }
         """)
+
+    def check_updates_auto(self):
+        """Verifica atualizações em background de forma automática"""
+        threading.Thread(target=self._perform_update_check, args=(False,), daemon=True).start()
+
+    def check_updates_manual(self):
+        """Verifica atualizações manualmente com feedback na UI"""
+        self.update_status_label.setText("Buscando no GitHub...")
+        self.update_status_label.setStyleSheet("color: #4facfe;")
+        threading.Thread(target=self._perform_update_check, args=(True,), daemon=True).start()
+
+    def _perform_update_check(self, manual=False):
+        """Lógica de verificação contra API do GitHub"""
+        try:
+            url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+            response = requests.get(url, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                latest_tag = data.get('tag_name', '').replace('v', '')
+                
+                # Comparar versões de forma simples (x.y.z)
+                v_local = VERSION.replace('v', '').split('.')
+                v_remote = latest_tag.split('.')
+                
+                is_newer = False
+                for lo, re in zip(v_local, v_remote):
+                    if int(re) > int(lo):
+                        is_newer = True
+                        break
+                    elif int(re) < int(lo):
+                        break
+                
+                if is_newer:
+                    self.update_available = True
+                    # Achar o asset .exe
+                    assets = data.get('assets', [])
+                    installer_asset = next((a for a in assets if a['name'].endswith('.exe')), None)
+                    
+                    if installer_asset:
+                        self.latest_version_url = installer_asset['browser_download_url']
+                        self._update_ui_update_found(latest_tag)
+                    else:
+                         self._update_ui_no_update("Nova versão encontrada, mas instalador indisponível.")
+                else:
+                    self._update_ui_no_update(f"Sistema atualizado (v{VERSION})")
+            else:
+                self._update_ui_no_update("Erro ao consultar GitHub.")
+        except Exception as e:
+            print(f"Erro ao verificar atualizações: {e}")
+            if manual:
+                self._update_ui_no_update(f"Erro de conexão: {str(e)[:50]}...")
+
+    def _update_ui_update_found(self, version_tag):
+        """Atualiza a UI quando nova versão é achada"""
+        self.update_trigger.emit(version_tag)
+
+    # Vou adicionar o sinal e o slot para thread safety
+    update_trigger = Signal(str)
+    no_update_trigger = Signal(str)
+
+    def on_update_found(self, version_tag):
+        self.update_status_label.setText(f"⭐ Nova versão disponível: v{version_tag}!")
+        self.update_status_label.setStyleSheet("color: #f1c40f; font-weight: bold; font-size: 14px;")
+        self.btn_download_update.setVisible(True)
+        self.btn_download_update.setText(f"📥 BAIXAR v{version_tag} E INSTALAR")
+
+    def on_no_update(self, msg):
+        self.update_status_label.setText(msg)
+        self.update_status_label.setStyleSheet("color: #aaa;")
+        self.btn_download_update.setVisible(False)
+
+    def _update_ui_no_update(self, msg):
+        self.no_update_trigger.emit(msg)
+
+    def download_and_install_update(self):
+        """Faz o download e executa o instalador"""
+        if not self.latest_version_url:
+            return
+            
+        reply = QMessageBox.question(
+            self, "Confirmar Atualização",
+            "O sistema será encerrado para iniciar a instalação da nova versão.\n\nDeseja continuar?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            # Diálogo de progresso simples
+            self.btn_download_update.setEnabled(False)
+            self.btn_download_update.setText("⏳ Baixando... Por favor, aguarde.")
+            
+            threading.Thread(target=self._run_download_task, daemon=True).start()
+
+    def _run_download_task(self):
+        try:
+            temp_dir = os.path.join(os.getenv('TEMP', '.'), 'PainelTribunaUpdate')
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            local_filename = os.path.join(temp_dir, "NovoInstalador.exe")
+            
+            response = requests.get(self.latest_version_url, stream=True)
+            with open(local_filename, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            
+            # Abrir o instalador e fechar o app
+            os.startfile(local_filename)
+            
+            # Sair
+            self.shutdown_trigger.emit()
+            
+        except Exception as e:
+            self.no_update_trigger.emit(f"Erro no download: {e}")
+            from PySide6.QtCore import QMetaObject, Q_ARG
+            # Re-habilitar botão via signal ou similar
+    
+    shutdown_trigger = Signal()

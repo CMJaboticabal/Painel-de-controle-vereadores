@@ -28,3 +28,7 @@ WINDOW_MIN_HEIGHT = 800
 # Segurança
 AUDIO_DEFAULT_STATE = False  # False = cortado (seguro)
 ARDUINO_TIMEOUT_SAFETY = 5000  # milissegundos
+
+# Versão do Sistema
+VERSION = "1.7.0"
+GITHUB_REPO = "almeidasinop/Painel-de-controle-vereadores"

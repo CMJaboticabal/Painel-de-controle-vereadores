@@ -16,13 +16,20 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer, Signal, QThread, QSize
 from PySide6.QtGui import QFont, QIcon, QPalette, QColor, QPixmap, QTransform
+import socket
+import urllib.request
 import urllib.error
 import threading
 import server
 import multiprocessing
 import logger_setup
 import ctypes
+from arduino_controller import ArduinoController
+from admin_vereadores import VereadoresAdminDialog
+from tela_plenario import TelaPlenario
+from tela_plenario_lateral import TelaPlenarioLateral
 from session_config import SessionConfig
+
 
 # Mutex para detecção pelo instalador
 MUTEX_NAME = "PainelControleTribunaMutex"

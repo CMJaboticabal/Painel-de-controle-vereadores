@@ -16,19 +16,29 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer, Signal, QThread, QSize
 from PySide6.QtGui import QFont, QIcon, QPalette, QColor, QPixmap, QTransform
-import socket
-
-from arduino_controller import ArduinoController
-from admin_vereadores import VereadoresAdminDialog
-from tela_plenario import TelaPlenario
-from tela_plenario_lateral import TelaPlenarioLateral
-import urllib.request
 import urllib.error
 import threading
 import server
 import multiprocessing
 import logger_setup
+import ctypes
 from session_config import SessionConfig
+
+# Mutex para detecção pelo instalador
+MUTEX_NAME = "PainelControleTribunaMutex"
+_mutex_handle = None
+
+def create_app_mutex():
+    global _mutex_handle
+    try:
+        kernel32 = ctypes.windll.kernel32
+        _mutex_handle = kernel32.CreateMutexW(None, False, MUTEX_NAME)
+        # Se GetLastError retornar 183 (ERROR_ALREADY_EXISTS), o mutex já existe
+        if kernel32.GetLastError() == 183:
+            return False
+        return True
+    except Exception:
+        return True # Fallback se falhar por algum motivo
 
 # Inicializar LOG
 # Deve ser chamado antes de qlqr outra coisa
@@ -1970,6 +1980,10 @@ def main():
     import time
     time.sleep(1)
 
+    # Tentar criar mutex
+    if not create_app_mutex():
+        print("ALERTA: O sistema já está em execução.")
+    
     app = QApplication(sys.argv)
     
     # Configurar fonte padrão

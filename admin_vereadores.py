@@ -28,6 +28,9 @@ class VereadoresAdminDialog(QDialog):
     
     vereadores_updated = Signal()  # Sinal emitido quando vereadores são atualizados
     session_updated = Signal()     # Sinal emitido quando configuração da sessão muda
+    update_trigger = Signal(str)    # Sinal para nova versão encontrada
+    no_update_trigger = Signal()   # Sinal para nenhuma atualização
+    shutdown_trigger = Signal()    # Sinal para encerrar o sistema
     
     def __init__(self, parent=None):
         super().__init__(parent)

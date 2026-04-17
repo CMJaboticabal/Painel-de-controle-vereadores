@@ -2,7 +2,7 @@
 ; Instala o Painel de Controle e o Driver USB CH340
 
 #define MyAppName "Painel de Controle Tribuna"
-#define MyAppVersion "1.7.3"
+#define MyAppVersion "1.7.4"
 #define MyAppPublisher "Camara Municipal"
 #define MyAppExeName "PainelControle.exe"
 
@@ -15,9 +15,13 @@ AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
+; Encerra o aplicativo se estiver aberto
+AppMutex=PainelControleTribunaMutex
+CloseApplications=yes
+RestartApplications=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputBaseFilename=Instalador_PainelTribuna_v1.7.3
+OutputBaseFilename=Instalador_PainelTribuna_v1.7.4
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

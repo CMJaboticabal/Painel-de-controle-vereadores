@@ -1277,8 +1277,8 @@ class VereadoresAdminDialog(QDialog):
         nome = self.input_nome.text().strip()
         partido = self.input_partido.text().strip().upper()
         
-        if not nome or not partido:
-            QMessageBox.warning(self, "Aviso", "Preencha nome e partido!")
+        if not nome:
+            QMessageBox.warning(self, "Aviso", "Preencha o nome do vereador!")
             return
         
         # Obter foto atual
@@ -1415,8 +1415,8 @@ class VereadoresAdminDialog(QDialog):
                 
                 # Normalizar cabeçalhos para letras minúsculas e sem espaços extras
                 headers = [h.strip().lower() for h in (reader.fieldnames or [])]
-                if not headers or 'nome' not in headers or 'partido' not in headers:
-                     QMessageBox.warning(self, "Erro", "CSV inválido. As colunas obrigatórias são 'nome' e 'partido'. A coluna 'foto' é opcional.")
+                if not headers or 'nome' not in headers:
+                     QMessageBox.warning(self, "Erro", "CSV inválido. A coluna obrigatória é 'nome'. As colunas 'partido' e 'foto' são opcionais.")
                      return
                 
                 reader.fieldnames = headers
@@ -1431,7 +1431,7 @@ class VereadoresAdminDialog(QDialog):
                     partido = row.get('partido', '').strip()
                     foto_path = row.get('foto', '').strip()
                     
-                    if not nome or not partido:
+                    if not nome:
                         continue # Pular linhas inválidas
                         
                     novo_foto_rel = None
@@ -1849,6 +1849,7 @@ class VereadoresAdminDialog(QDialog):
         
         # Logo Lado Esquerdo
         logo_label = QLabel()
+        logo_label.setStyleSheet("border: none; background: transparent;")
         logo_pix = QPixmap(self.session_config.get_bundle_path("fotos/logo.png"))
         if not logo_pix.isNull():
             logo_label.setPixmap(logo_pix.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
@@ -1931,6 +1932,7 @@ class VereadoresAdminDialog(QDialog):
         # Foto Circular
         dev_photo_label = QLabel()
         dev_photo_label.setFixedSize(80, 80)
+        dev_photo_label.setStyleSheet("border: none; background: transparent;")
         carlos_pix = QPixmap(self.session_config.get_bundle_path("fotos/carlos.jpeg"))
         if not carlos_pix.isNull():
             size = 80
@@ -1950,9 +1952,9 @@ class VereadoresAdminDialog(QDialog):
             dev_photo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         dev_text_vbox = QVBoxLayout()
-        dev_company = QLabel("Imagine Soluções Digitais")
+        dev_company = QLabel("Carlos Almeida")
         dev_company.setStyleSheet("font-size: 18px; font-weight: 700; color: #ffffff; border: none; background: transparent;")
-        dev_name = QLabel("Carlos Almeida - CTO & Developer")
+        dev_name = QLabel("Imagine Soluções Digitais - CTO & Developer")
         dev_name.setStyleSheet("font-size: 14px; color: rgba(255, 255, 255, 0.6); border: none; background: transparent;")
         dev_text_vbox.addWidget(dev_company)
         dev_text_vbox.addWidget(dev_name)
@@ -1975,7 +1977,7 @@ class VereadoresAdminDialog(QDialog):
         """)
         btn_github.clicked.connect(lambda: webbrowser.open("https://github.com/almeidasinop"))
         
-        btn_site = QPushButton(" Site Oficial")
+        btn_site = QPushButton(" Repositório Oficial")
         btn_site.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_site.setStyleSheet("""
             QPushButton {
@@ -1984,7 +1986,7 @@ class VereadoresAdminDialog(QDialog):
             }
             QPushButton:hover { background-color: rgba(255, 255, 255, 0.15); border-color: #4facfe; }
         """)
-        btn_site.clicked.connect(lambda: webbrowser.open("https://imagineweb.dev/"))
+        btn_site.clicked.connect(lambda: webbrowser.open("https://github.com/CamaraSinop/Painel-de-controle-vereadores"))
         
         btn_row.addWidget(btn_github)
         btn_row.addWidget(btn_site)

@@ -30,5 +30,5 @@ AUDIO_DEFAULT_STATE = False  # False = cortado (seguro)
 ARDUINO_TIMEOUT_SAFETY = 5000  # milissegundos
 
 # Versão do Sistema
-VERSION = "1.7.7"
-GITHUB_REPO = "almeidasinop/Painel-de-controle-vereadores"
+VERSION = "1.7.8"
+GITHUB_REPO = "CamaraSinop/Painel-de-controle-vereadores"

@@ -31,4 +31,4 @@ ARDUINO_TIMEOUT_SAFETY = 5000  # milissegundos
 
 # Versão do Sistema
 VERSION = "1.7.8"
-GITHUB_REPO = "CamaraSinop/Painel-de-controle-vereadores"
+GITHUB_REPO = "camara-jaboticabal/Painel-de-controle-vereadores"

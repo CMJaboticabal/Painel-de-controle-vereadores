@@ -4,7 +4,7 @@ Exibição fullscreen de foto, nome, partido e cronômetro
 """
 
 import sys
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar
 from PySide6.QtCore import Qt, QTimer, Slot, QDate, QLocale
 from PySide6.QtGui import QFont, QPixmap, QScreen
 import os
@@ -152,17 +152,9 @@ class TelaPlenario(QMainWindow):
         central_widget.setLayout(main_layout)
         
         # Aplicar estilo global (Imagem de fundo)
-        bg_path = os.path.join(os.path.dirname(__file__), "fotos", "Cópia de TELA DE TEMPO.png")
-        bg_path = bg_path.replace("\\", "/")
+        self.apply_background_image()
         
-        self.setStyleSheet(f"""
-            QMainWindow {{
-                border-image: url("{bg_path}") 0 0 0 0 stretch stretch;
-            }}
-        """)
-        
-        # Fullscreen
-        self.showFullScreen()
+        # Flags antes de mostrar (ordem importante no macOS)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         
         # Atualizar header inicial
@@ -180,15 +172,126 @@ class TelaPlenario(QMainWindow):
     
     def move_to_second_monitor(self):
         """Mover janela para segundo monitor se disponível"""
-        screens = QScreen.virtualSiblings(self.screen())
-        
-        if len(screens) > 1:
-            # Mover para segundo monitor
-            second_screen = screens[1]
-            self.setGeometry(second_screen.geometry())
-            print(f"✅ Tela do Plenário movida para Monitor 2: {second_screen.name()}")
+        app = QApplication.instance()
+        screens = app.screens() if app else []
+
+        if not screens:
+            self.showFullScreen()
+            return
+
+        primary = app.primaryScreen()
+        target_screen = None
+        for screen in screens:
+            if screen != primary:
+                target_screen = screen
+                break
+        if target_screen is None:
+            target_screen = primary or screens[0]
+
+        try:
+            handle = self.windowHandle()
+            if handle:
+                handle.setScreen(target_screen)
+        except Exception as e:
+            print(f"⚠️ Falha ao setar screen handle (padrão): {e}")
+
+        self.setGeometry(target_screen.geometry())
+
+        # No macOS, forçar ciclo normal->fullscreen melhora estabilidade no monitor 2.
+        if sys.platform == "darwin":
+            self.showNormal()
+            self.show()
+            QTimer.singleShot(120, self.showFullScreen)
+            QTimer.singleShot(320, self._retry_secondary_on_macos)
+        else:
+            self.showFullScreen()
+
+        if target_screen != primary:
+            print(f"✅ Tela do Plenário movida para Monitor 2: {target_screen.name()}")
         else:
             print("⚠️ Apenas um monitor detectado. Tela do Plenário no monitor principal.")
+
+    def _retry_secondary_on_macos(self, attempt=1):
+        """Retry curto para estabilizar fullscreen no monitor secundário no macOS."""
+        if sys.platform != "darwin" or attempt > 4:
+            return
+
+        app = QApplication.instance()
+        if not app:
+            return
+        screens = app.screens()
+        if len(screens) < 2:
+            return
+
+        primary = app.primaryScreen()
+        target_screen = next((s for s in screens if s != primary), screens[1])
+        current_screen = self.screen()
+        if current_screen == target_screen:
+            return
+
+        try:
+            handle = self.windowHandle()
+            if handle:
+                handle.setScreen(target_screen)
+        except Exception:
+            pass
+
+        self.showNormal()
+        self.setGeometry(target_screen.geometry())
+        self.showFullScreen()
+        QTimer.singleShot(180, lambda: self._retry_secondary_on_macos(attempt + 1))
+
+    def resolve_secondary_background_path(self):
+        """Resolve caminho da imagem de fundo com fallback robusto (Windows/macOS)."""
+        configured = self.session_config.get_secondary_background_path()
+        candidates = []
+        if configured:
+            if os.path.isabs(configured):
+                candidates.append(configured)
+            else:
+                candidates.append(self.session_config.get_data_path(configured))
+                candidates.append(self.session_config.get_bundle_path(configured))
+
+        # Fallback padrão: tentar nome legado e, em seguida, busca por padrão no diretório fotos.
+        candidates.append(self.session_config.get_bundle_path(os.path.join("fotos", "Cópia de TELA DE TEMPO.png")))
+        candidates.append(self.session_config.get_data_path(os.path.join("fotos", "Cópia de TELA DE TEMPO.png")))
+
+        for path in candidates:
+            if path and os.path.exists(path):
+                return path
+
+        photos_dirs = [
+            self.session_config.get_data_path("fotos"),
+            self.session_config.get_bundle_path("fotos"),
+        ]
+        for photos_dir in photos_dirs:
+            if not os.path.isdir(photos_dir):
+                continue
+            for filename in os.listdir(photos_dir):
+                normalized = filename.lower()
+                if "tela de tempo" in normalized and normalized.endswith(".png"):
+                    candidate = os.path.join(photos_dir, filename)
+                    if os.path.exists(candidate):
+                        return candidate
+
+        return None
+
+    def apply_background_image(self):
+        """Aplica imagem de fundo configurada com fallback para tema escuro."""
+        bg_path = self.resolve_secondary_background_path()
+        if bg_path:
+            safe_path = bg_path.replace("\\", "/")
+            self.setStyleSheet(f"""
+                QMainWindow {{
+                    border-image: url("{safe_path}") 0 0 0 0 stretch stretch;
+                }}
+            """)
+        else:
+            self.setStyleSheet("""
+                QMainWindow {
+                    background-color: #101018;
+                }
+            """)
     
     def set_placeholder_photo(self):
         """Definir foto placeholder"""

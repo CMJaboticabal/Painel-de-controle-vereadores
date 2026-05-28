@@ -96,6 +96,9 @@ class SessionConfig:
                 
                 # Website da Lower Third
                 self.website_url = data.get('website_url', 'www.sinop.mt.leg.br')
+
+                # Imagem de fundo da tela secundária
+                self.secondary_background_path = data.get('secondary_background_path', None)
                 
         except FileNotFoundError:
             self.logo_path = None
@@ -113,6 +116,7 @@ class SessionConfig:
             self.time_presets = [1, 2, 3, 5, 10, 15]
             self.secondary_screen_type = 'plenario'
             self.website_url = 'www.sinop.mt.leg.br'
+            self.secondary_background_path = None
             self.save_config()
     
     def save_config(self):
@@ -127,6 +131,7 @@ class SessionConfig:
             'time_presets': self.time_presets,
             'secondary_screen_type': self.secondary_screen_type,
             'website_url': getattr(self, 'website_url', 'www.sinop.mt.leg.br'),
+            'secondary_background_path': getattr(self, 'secondary_background_path', None),
         }
         print(f"DEBUG: Gravando JSON session_name='{self.session_name}'")
         with open(self.config_path, 'w', encoding='utf-8') as f:
@@ -226,6 +231,15 @@ class SessionConfig:
 
     def get_website_url(self) -> str:
         return getattr(self, 'website_url', 'www.sinop.mt.leg.br')
+
+    def set_secondary_background_path(self, image_path):
+        """Salvar caminho da imagem de fundo da tela secundária."""
+        self.secondary_background_path = image_path
+        self.save_config()
+
+    def get_secondary_background_path(self):
+        """Obter caminho configurado da imagem de fundo da tela secundária."""
+        return getattr(self, 'secondary_background_path', None)
 
     def get_data_path(self, relative_path=None):
         """Retorna o caminho absoluto na pasta de dados do usuário"""

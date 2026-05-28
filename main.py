@@ -33,6 +33,9 @@ from session_config import SessionConfig
 
 # Mutex para detecção pelo instalador
 MUTEX_NAME = "PainelControleTribunaMutex"
+
+# Tolerância de aparte: tempo usado no aparte que NÃO é descontado do orador original
+APARTE_TOLERANCE_SECONDS = 60  # 1 minuto
 _mutex_handle = None
 
 def create_app_mutex():
@@ -179,10 +182,7 @@ class PainelPresidente(QMainWindow):
 
         # Abrir Tela do Plenário automaticamente (agora, em paralelo)
         print("DEBUG: Abrindo tela do plenário...")
-        if self.session_config.get_secondary_screen_type() == 'lateral':
-            self.open_tela_plenario_lateral()
-        else:
-            self.open_tela_plenario()
+        self._open_secondary_configured_with_layout_fallback()
         print("DEBUG: Inicialização completa!")
 
     def on_arduino_connection_finished(self, connected):
@@ -1406,14 +1406,19 @@ class PainelPresidente(QMainWindow):
             tempo_gasto = self.aparte_total_seconds - self.remaining_seconds
             if tempo_gasto < 0: tempo_gasto = 0
             
-        print(f"DEBUG: Tempo gasto no aparte: {tempo_gasto}s")
+        tempo_descontado = max(0, tempo_gasto - APARTE_TOLERANCE_SECONDS)
+        print(
+            f"DEBUG: Tempo gasto no aparte: {tempo_gasto}s | "
+            f"Tolerância: {APARTE_TOLERANCE_SECONDS}s | "
+            f"Descontado do orador: {tempo_descontado}s"
+        )
         
         # Restaurar orador principal e seleção
         self.live_vereador = self.concedente
         self.selected_vereador = self.concedente
         
-        # Restaurar tempo subtraindo o tempo gasto no aparte
-        self.remaining_seconds = self.saved_main_seconds - tempo_gasto
+        # Restaurar tempo subtraindo apenas o que exceder a tolerância
+        self.remaining_seconds = self.saved_main_seconds - tempo_descontado
         if self.remaining_seconds < 0:
             self.remaining_seconds = 0
             
@@ -1862,6 +1867,8 @@ class PainelPresidente(QMainWindow):
         for tela in [self.tela_plenario, self.tela_plenario_lateral]:
             if tela:
                 tela.session_config.load_config()
+                if hasattr(tela, 'apply_background_image'):
+                    tela.apply_background_image()
                 tela.update_header()
                 if not tela.timer_started:
                     tela.show_session_info()
@@ -1914,16 +1921,85 @@ class PainelPresidente(QMainWindow):
     
     def open_secondary_screen(self):
         """Abre a tela secundária configurada no admin"""
-        if self.session_config.get_secondary_screen_type() == 'lateral':
-            self.open_tela_plenario_lateral()
-        else:
-            self.open_tela_plenario()
+        self._open_secondary_configured_with_layout_fallback()
+
+    def _position_window_on_secondary_with_fallback(self, window, window_name, retry=0):
+        """Posicionar janela no monitor secundário com fallback para macOS."""
+        if not window:
+            return
+
+        app = QApplication.instance()
+        if app is None:
+            return
+
+        screens = app.screens()
+        if len(screens) < 2:
+            print(f"⚠️ {window_name}: apenas um monitor detectado.")
+            return
+
+        primary = app.primaryScreen()
+        target_screen = None
+        for screen in screens:
+            if screen != primary:
+                target_screen = screen
+                break
+        if target_screen is None:
+            target_screen = screens[1]
+
+        try:
+            handle = window.windowHandle()
+            if handle:
+                handle.setScreen(target_screen)
+
+            # Alguns ambientes no mac ignoram setScreen na primeira tentativa.
+            window.setGeometry(target_screen.geometry())
+            window.showFullScreen()
+
+            current_screen = window.screen()
+            if current_screen == target_screen:
+                print(f"✅ {window_name}: fallback de monitor aplicado ({target_screen.name()}).")
+                return
+
+            if retry < 4:
+                delay_ms = 150 * (retry + 1)
+                QTimer.singleShot(
+                    delay_ms,
+                    lambda w=window, n=window_name, r=retry + 1: self._position_window_on_secondary_with_fallback(w, n, r)
+                )
+            else:
+                print(f"⚠️ {window_name}: não foi possível fixar no monitor secundário após retries.")
+        except Exception as e:
+            print(f"⚠️ {window_name}: erro ao aplicar fallback de monitor ({e}).")
+
+    def _open_secondary_configured_with_layout_fallback(self):
+        """Abrir tela secundária com fallback entre layouts padrão/lateral."""
+        preferred_type = self.session_config.get_secondary_screen_type()
+        try:
+            if preferred_type == 'lateral':
+                self.open_tela_plenario_lateral()
+            else:
+                self.open_tela_plenario()
+            return
+        except Exception as e:
+            print(f"⚠️ Falha ao abrir layout '{preferred_type}': {e}")
+
+        # Fallback de layout: tenta o outro tipo para não ficar sem tela secundária.
+        fallback_type = 'padrao' if preferred_type == 'lateral' else 'lateral'
+        try:
+            if fallback_type == 'lateral':
+                self.open_tela_plenario_lateral()
+            else:
+                self.open_tela_plenario()
+            print(f"✅ Fallback de layout aplicado: {fallback_type}")
+        except Exception as e:
+            print(f"❌ Falha no fallback de layout secundário ({fallback_type}): {e}")
 
     def open_tela_plenario(self):
         """Abrir tela do plenário (Monitor 2) — layout padrão"""
         if not self.tela_plenario:
             self.tela_plenario = TelaPlenario()
             self.tela_plenario.show()
+            self._position_window_on_secondary_with_fallback(self.tela_plenario, "Tela do Plenário (padrão)")
             print("✅ Tela do Plenário aberta (layout padrão)")
 
     def open_tela_plenario_lateral(self):
@@ -1931,6 +2007,7 @@ class PainelPresidente(QMainWindow):
         if not self.tela_plenario_lateral:
             self.tela_plenario_lateral = TelaPlenarioLateral()
             self.tela_plenario_lateral.show()
+            self._position_window_on_secondary_with_fallback(self.tela_plenario_lateral, "Tela do Plenário (lateral)")
             print("✅ Tela do Plenário aberta (layout lateral)")
     
     def sync_tela_plenario(self):

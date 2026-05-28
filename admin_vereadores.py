@@ -669,6 +669,20 @@ class VereadoresAdminDialog(QDialog):
             }
         """)
         tela_layout.addRow("Tipo de Tela:", self.combo_screen_type)
+
+        # Imagem de fundo da tela secundária
+        bg_layout = QHBoxLayout()
+        current_bg = self.session_config.get_secondary_background_path()
+        self.bg_path_label = QLabel(current_bg or "Padrão do sistema")
+        btn_bg = QPushButton("🖼️ Escolher Fundo")
+        btn_bg.clicked.connect(self.escolher_fundo_secundario)
+        btn_bg_clear = QPushButton("↺ Usar Padrão")
+        btn_bg_clear.clicked.connect(lambda: setattr(self, "new_secondary_bg_path", ""))
+        btn_bg_clear.clicked.connect(lambda: self.bg_path_label.setText("Padrão do sistema"))
+        bg_layout.addWidget(self.bg_path_label)
+        bg_layout.addWidget(btn_bg)
+        bg_layout.addWidget(btn_bg_clear)
+        tela_layout.addRow("Fundo da Tela 2:", bg_layout)
         
         tela_note = QLabel("A seleção é salva automaticamente ao clicar em 'Salvar Configurações'.")
         tela_note.setStyleSheet("color: rgba(200,200,255,0.6); font-size: 12px; font-style: italic;")
@@ -884,6 +898,17 @@ class VereadoresAdminDialog(QDialog):
             self.new_logo_path = file
             self.logo_path_label.setText(os.path.basename(file))
 
+    def escolher_fundo_secundario(self):
+        file, _ = QFileDialog.getOpenFileName(
+            self,
+            "Selecionar Fundo da Tela Secundária",
+            "",
+            "Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"
+        )
+        if file:
+            self.new_secondary_bg_path = file
+            self.bg_path_label.setText(os.path.basename(file))
+
     
     def refresh_ports(self):
         """Atualizar lista de portas COM"""
@@ -985,6 +1010,11 @@ class VereadoresAdminDialog(QDialog):
             # Copiar logo para pasta assets ou usar caminho absoluto? 
             # O sistema atual usa caminho absoluto salvo no json
              self.session_config.set_logo(self.new_logo_path)
+
+        if hasattr(self, 'new_secondary_bg_path'):
+            # string vazia significa "voltar ao padrão"
+            bg_path = self.new_secondary_bg_path or None
+            self.session_config.set_secondary_background_path(bg_path)
         
         # Salvar Cores
         self.session_config.set_colors(
@@ -1977,7 +2007,7 @@ class VereadoresAdminDialog(QDialog):
         """)
         btn_github.clicked.connect(lambda: webbrowser.open("https://github.com/almeidasinop"))
         
-        btn_site = QPushButton(" Repositório Oficial")
+        btn_site = QPushButton(" Repositório de Atualização")
         btn_site.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_site.setStyleSheet("""
             QPushButton {
@@ -1986,7 +2016,7 @@ class VereadoresAdminDialog(QDialog):
             }
             QPushButton:hover { background-color: rgba(255, 255, 255, 0.15); border-color: #4facfe; }
         """)
-        btn_site.clicked.connect(lambda: webbrowser.open("https://github.com/CamaraSinop/Painel-de-controle-vereadores"))
+        btn_site.clicked.connect(lambda: webbrowser.open(f"https://github.com/{GITHUB_REPO}"))
         
         btn_row.addWidget(btn_github)
         btn_row.addWidget(btn_site)

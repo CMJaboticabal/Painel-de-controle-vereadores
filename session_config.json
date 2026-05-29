@@ -1,0 +1,11 @@
+{
+    "logo_path": "C:/Users/caiqu/Downloads/sinop-68d41dadd2ed3.png",
+    "session_name": "01ª SESSÃO ORDINARIA",
+    "active_list": "presets/mirim.json",
+    "colors": {
+        "primary": "#1e4586",
+        "secondary": "#067b42",
+        "background": "#000000"
+    },
+    "arduino_port": "COM7"
+}

@@ -1,0 +1,56 @@
+[
+    {
+        "id": 1,
+        "nome": "João Silva",
+        "partido": "PSDB",
+        "foto": null
+    },
+    {
+        "id": 2,
+        "nome": "Maria Santos",
+        "partido": "PT",
+        "foto": null
+    },
+    {
+        "id": 3,
+        "nome": "Carlos Oliveira",
+        "partido": "MDB",
+        "foto": null
+    },
+    {
+        "id": 4,
+        "nome": "Ana Costa",
+        "partido": "PDT",
+        "foto": null
+    },
+    {
+        "id": 5,
+        "nome": "Pedro Almeida",
+        "partido": "PSOL",
+        "foto": null
+    },
+    {
+        "id": 6,
+        "nome": "Juliana Ferreira",
+        "partido": "PV",
+        "foto": null
+    },
+    {
+        "id": 7,
+        "nome": "Roberto Lima",
+        "partido": "PP",
+        "foto": null
+    },
+    {
+        "id": 8,
+        "nome": "Fernanda Rocha",
+        "partido": "PSB",
+        "foto": null
+    },
+    {
+        "id": 9,
+        "nome": "GABRIEL ALMEIDA",
+        "partido": "PL",
+        "foto": "fotos/WhatsApp Image 2025-12-05 at 12.21.28.jpeg"
+    }
+]

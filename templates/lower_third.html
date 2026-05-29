@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lower Third - Sinop Dinâmico</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+
+        :root {
+            /* Cores padrão caso a API falhe */
+            --primary-color: #43A077;
+            /* Verde Sinop */
+            --secondary-color: #5B76A7;
+            /* Azul Sinop */
+            --text-primary: #FFFFFF;
+            --text-secondary: #FFFFFF;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        #container {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            /* Colado na borda */
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(-100%);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #container.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* LOGO / BRASÃO */
+        .logo-wrapper {
+            position: absolute;
+            left: 20px;
+            z-index: 10;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.4));
+        }
+
+        .logo-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* BARRAS */
+        .bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            /* Pequeno espaçamento entre as barras como na ref */
+            padding-left: 0;
+        }
+
+        .bar {
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+            padding-left: 170px;
+            /* Espaço para o brasão que está por cima */
+            padding-right: 40px;
+            white-space: nowrap;
+            width: fit-content;
+            min-width: 400px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 0 12px 12px 0;
+            /* Arredondado apenas na direita */
+        }
+
+        /* Barra Superior: Sessão e Data */
+        .top-bar {
+            background-color: var(--primary-color);
+            height: 35px;
+            font-size: 18px;
+            font-weight: 700;
+            justify-content: space-between;
+            text-transform: uppercase;
+        }
+
+        .top-bar span:last-child {
+            margin-left: 50px;
+        }
+
+        /* Barra do Meio: Nome */
+        .middle-bar {
+            background-color: var(--secondary-color);
+            height: 60px;
+            font-size: 42px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+        }
+
+        /* Barra Inferior: Site */
+        .bottom-bar {
+            background-color: var(--primary-color);
+            height: 28px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Ajuste para o conteúdo não ficar colado se a barra for pequena */
+        .content-text {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+        <!-- Logo Flutuante -->
+        <div class="logo-wrapper">
+            <img src="/api/session/logo" alt="Brasão" class="logo-img"
+                onerror="this.src='https://www.sinop.mt.leg.br/logo.png'">
+        </div>
+
+        <!-- Barras que saem da borda -->
+        <div class="bars-container">
+            <!-- Camada 1: Sessão | Data -->
+            <div class="bar top-bar">
+                <span id="session-info">...</span>
+                <span id="current-date">...</span>
+            </div>
+
+            <!-- Camada 2: Nome do Orador -->
+            <div class="bar middle-bar" id="vereador-nome"></div>
+
+            <!-- Camada 3: Website -->
+            <div class="bar bottom-bar" id="website-url">
+                www.sinop.mt.leg.br
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io('http://' + document.domain + ':' + location.port, {
+            transports: ['polling'], // Forçar polling para evitar erros de WS local
+            upgrade: false
+        });
+        const container = document.getElementById('container');
+        const nomeEl = document.getElementById('vereador-nome');
+        const sessionEl = document.getElementById('session-info');
+        const dateEl = document.getElementById('current-date');
+
+        let sessionText = "SESSÃO ORDINÁRIA";
+        let currentDate = new Date().toLocaleDateString('pt-BR');
+
+        // 1. Buscar Cores Dinâmicas da API
+        function loadColors() {
+            fetch('/api/session/colors')
+                .then(res => res.json())
+                .then(colors => {
+                    if (colors.primary) document.documentElement.style.setProperty('--primary-color', colors.primary);
+                    if (colors.secondary) document.documentElement.style.setProperty('--secondary-color', colors.secondary);
+                    if (colors.text_primary) document.documentElement.style.setProperty('--text-primary', colors.text_primary);
+                    if (colors.text_secondary) document.documentElement.style.setProperty('--text-secondary', colors.text_secondary);
+                })
+                .catch(err => console.error("Erro ao carregar cores:", err));
+        }
+
+        // 2. Buscar Informações da Sessão
+        function loadSessionInfo() {
+            if (isTestMode) return;
+            fetch('/api/session/info')
+                .then(res => res.json())
+                .then(data => {
+                    const rawName = data.session_name || data.session_number || "";
+                    sessionText = rawName.trim() || "SESSÃO ORDINÁRIA";
+                    
+                    const websiteUrl = data.website_url || "www.sinop.mt.leg.br";
+                    document.getElementById('website-url').textContent = websiteUrl;
+                    
+                    console.log("Sessão carregada:", sessionText);
+                    updateDisplay();
+                })
+                .catch(err => console.error("Erro ao carregar info da sessão:", err));
+        }
+
+        function updateDisplay(nome = null, partido = null) {
+            // Só atualiza nome se passado explicitamente (pode ser string vazia)
+            if (nome !== null) {
+                if (nome && partido && partido.trim() !== "") {
+                    nomeEl.textContent = `${nome} - ${partido}`;
+                } else {
+                    nomeEl.textContent = nome;
+                }
+            }
+
+            // Garante que sessionText tenha valor
+            if (!sessionText || sessionText.trim() === "") {
+                sessionText = "SESSÃO ORDINÁRIA";
+            }
+
+            sessionEl.textContent = sessionText;
+            dateEl.textContent = new Date().toLocaleDateString('pt-BR');
+        }
+
+        let isTimerRunning = false;
+        let hasSpeaker = false;
+        let displayTimeout;
+        const SHOW_DELAY = 1000;
+
+        // Função central para controlar visibilidade
+        function checkVisibility() {
+            console.log(`Check Visibility: Speaker=${hasSpeaker}, Timer=${isTimerRunning}`);
+
+            if (hasSpeaker && isTimerRunning) {
+                // Se ambos true, mostra (com debounce se necessário, mas aqui direto)
+                // Se já estiver visível, não faz nada
+                if (!container.classList.contains('visible')) {
+                    // Limpa timeout anterior se houver
+                    clearTimeout(displayTimeout);
+                    displayTimeout = setTimeout(() => {
+                        container.classList.add('visible');
+                        console.log('VISIBILIDADE: Ligada');
+                    }, SHOW_DELAY);
+                }
+            } else {
+                // Se um dos dois for false, esconde imediatamente
+                clearTimeout(displayTimeout);
+                container.classList.remove('visible');
+                console.log('VISIBILIDADE: Desligada');
+            }
+        }
+
+        const isTestMode = new URLSearchParams(window.location.search).has('test');
+
+        // 3. Handlers de Socket
+        socket.on('connect', () => {
+            console.log('Conectado ao servidor');
+            loadColors();
+            loadSessionInfo();
+            // Só busca estado no modo normal
+            if (!isTestMode) fetchState();
+        });
+
+        socket.on('config_updated', () => {
+            console.log('Evento: config_updated');
+            if (!isTestMode) {
+                loadColors();
+                loadSessionInfo();
+            }
+        });
+
+        socket.on('speaker_selected', (data) => {
+            if (isTestMode) return; // Ignorar no modo teste
+
+            console.log('Evento: speaker_selected', data);
+            if (data && data.speaker) {
+                updateDisplay(data.speaker.nome, data.speaker.partido);
+                hasSpeaker = true;
+            } else {
+                updateDisplay("");
+                hasSpeaker = false;
+            }
+            checkVisibility();
+        });
+
+        socket.on('timer_start', () => {
+            if (isTestMode) return;
+            console.log('Evento: timer_start');
+            isTimerRunning = true;
+            checkVisibility();
+        });
+
+        socket.on('timer_stop', () => {
+            if (isTestMode) return;
+            console.log('Evento: timer_stop');
+            isTimerRunning = false;
+            checkVisibility();
+        });
+
+        socket.on('timer_pause', () => {
+            // Não faz nada por enquanto
+        });
+
+        // Estado inicial
+        function fetchState() {
+            if (isTestMode) return;
+
+            fetch('/api/state')
+                .then(res => res.json())
+                .then(state => {
+                    console.log('Estado inicial recebido:', state);
+                    loadSessionInfo();
+
+                    if (state.speaker) {
+                        updateDisplay(state.speaker.nome, state.speaker.partido);
+                        hasSpeaker = true;
+                    } else {
+                        hasSpeaker = false;
+                    }
+
+                    if (state.timer && state.timer.is_running) {
+                        isTimerRunning = true;
+                    } else {
+                        isTimerRunning = false;
+                    }
+
+                    if (hasSpeaker && isTimerRunning) {
+                        container.classList.add('visible');
+                    } else {
+                        container.classList.remove('visible');
+                    }
+                })
+                .catch(err => console.error("Erro ao buscar estado:", err));
+        }
+
+        // Inicializar
+        loadColors();
+        if (!isTestMode) loadSessionInfo();
+
+        if (isTestMode) {
+            console.log("MODO TESTE ATIVADO");
+            setTimeout(() => {
+                nomeEl.textContent = "VEREADOR DE TESTE - PT";
+                sessionText = "SESSÃO DE TESTE";
+                hasSpeaker = true;
+                isTimerRunning = true;
+                updateDisplay();
+                checkVisibility();
+            }, 500);
+        } else {
+            container.classList.remove('visible');
+            fetchState();
+        }
+    </script>
+</body>
+
+</html>

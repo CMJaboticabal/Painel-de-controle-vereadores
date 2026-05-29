@@ -1,0 +1,28 @@
+PASSO 1: PRÉ-REQUISITOS
+-----------------------
+1. Você precisa ter o "Inno Setup" instalado.
+   Se não tiver, baixe e instale: https://jrsoftware.org/isdl.php
+
+PASSO 2: GERAR O INSTALADOR
+---------------------------
+1. Já realizamos a compilação do código Python (PyInstaller).
+   Os arquivos do programa estão na pasta: "dist\PainelControle"
+
+2. Localize o arquivo "setup_script.iss" na pasta raiz do projeto.
+   Caminho: c:\Users\caiqu\github\Painel de controle\setup_script.iss
+
+3. Clique com o botão direito em "setup_script.iss".
+4. Selecione a opção "Compile" (cujo ícone é o logo do Inno Setup).
+   OU
+   Abra o arquivo com o Inno Setup Compiler e clique no botão "Build" (Play).
+
+PASSO 3: RESULTADO
+------------------
+O instalador final (.exe) será criado na pasta: "Output" (dentro da pasta do projeto)
+Nome do arquivo: "Instalador_PainelTribuna_v1.0.exe"
+
+O QUE O INSTALADOR FAZ?
+-----------------------
+- Instala o Painel de Controle.
+- Cria atalhos na Área de Trabalho e Menu Iniciar.
+- Executa automaticamente o instalador do Driver USB (CH34x) ao final.

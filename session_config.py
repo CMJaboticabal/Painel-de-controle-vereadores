@@ -93,6 +93,9 @@ class SessionConfig:
                 
                 # Tipo de tela secundária: 'plenario' | 'lateral'
                 self.secondary_screen_type = data.get('secondary_screen_type', 'plenario')
+
+                # Índice do monitor para tela do público (0=1º, 1=2º monitor, ...)
+                self.public_screen_index = int(data.get('public_screen_index', 1))
                 
                 # Website da Lower Third
                 self.website_url = data.get('website_url', 'www.sinop.mt.leg.br')
@@ -115,6 +118,7 @@ class SessionConfig:
             self.arduino_port = None
             self.time_presets = [1, 2, 3, 5, 10, 15]
             self.secondary_screen_type = 'plenario'
+            self.public_screen_index = 1
             self.website_url = 'www.sinop.mt.leg.br'
             self.secondary_background_path = None
             self.save_config()
@@ -130,6 +134,7 @@ class SessionConfig:
             'arduino_port': self.arduino_port,
             'time_presets': self.time_presets,
             'secondary_screen_type': self.secondary_screen_type,
+            'public_screen_index': getattr(self, 'public_screen_index', 1),
             'website_url': getattr(self, 'website_url', 'www.sinop.mt.leg.br'),
             'secondary_background_path': getattr(self, 'secondary_background_path', None),
         }
@@ -224,6 +229,18 @@ class SessionConfig:
     def get_secondary_screen_type(self) -> str:
         """Obter tipo de tela secundária salvo"""
         return getattr(self, 'secondary_screen_type', 'plenario')
+
+    def set_public_screen_index(self, index: int):
+        """Define em qual monitor exibir a tela do público (0 = primeiro, 1 = segundo, ...)."""
+        try:
+            self.public_screen_index = max(0, int(index))
+        except (TypeError, ValueError):
+            self.public_screen_index = 1
+        self.save_config()
+
+    def get_public_screen_index(self) -> int:
+        """Índice do monitor da tela do público (padrão: 1 = segundo monitor)."""
+        return int(getattr(self, 'public_screen_index', 1))
 
     def set_website_url(self, url: str):
         self.website_url = url

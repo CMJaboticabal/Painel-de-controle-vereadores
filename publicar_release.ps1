@@ -1,9 +1,25 @@
-# Publica/atualiza a release v1.7.8 no GitHub (descricao + instalador).
+# Publica/atualiza release no GitHub (descricao + instalador).
+param(
+    [string]$Version = ""
+)
+
 $ErrorActionPreference = "Stop"
 $repo = "CMJaboticabal/Painel-de-controle-vereadores"
-$tag = "v1.7.8"
-$installer = Join-Path $PSScriptRoot "Output\Instalador_PainelTribuna_v1.7.8.exe"
-$notes = Join-Path $PSScriptRoot "RELEASE_v1.7.8.md"
+$root = $PSScriptRoot
+
+if (-not $Version) {
+    $configPath = Join-Path $root "config.py"
+    if ($configPath -match 'VERSION = "([^"]+)"' -or (Get-Content $configPath -Raw) -match 'VERSION = "([^"]+)"') {
+        $Version = $Matches[1]
+    }
+}
+if (-not $Version) {
+    throw "Versao nao encontrada em config.py"
+}
+
+$tag = "v$Version"
+$installer = Join-Path $root "Output\Instalador_PainelTribuna_v$Version.exe"
+$notes = Join-Path $root "RELEASE_v$Version.md"
 
 if (-not (Test-Path $installer)) {
     throw "Instalador nao encontrado: $installer"
@@ -41,24 +57,16 @@ try {
     }
 } catch { }
 
+$assetName = [System.IO.Path]::GetFileName($installer)
+
 if ($release) {
     Write-Host "Atualizando release $tag (id $($release.id))..."
-    gh release edit $tag --repo $repo --title "v1.7.8" --notes-file $notes
-    $hasAsset = $false
-    try {
-        $assets = gh api "repos/$repo/releases/$($release.id)/assets" --jq ".[].name"
-        $hasAsset = ($assets -contains "Instalador_PainelTribuna_v1.7.8.exe")
-    } catch { }
-    if (-not $hasAsset) {
-        Write-Host "Enviando instalador..."
-        gh release upload $tag $installer --repo $repo --clobber
-    } else {
-        Write-Host "Substituindo asset do instalador..."
-        gh release upload $tag $installer --repo $repo --clobber
-    }
+    gh release edit $tag --repo $repo --title $tag --notes-file $notes
+    Write-Host "Enviando instalador..."
+    gh release upload $tag $installer --repo $repo --clobber
 } else {
-    Write-Host "Criando release $tag (tag existe, release ainda nao)..."
-    gh release create $tag $installer --repo $repo --title "v1.7.8" --notes-file $notes --target master
+    Write-Host "Criando release $tag..."
+    gh release create $tag $installer --repo $repo --title $tag --notes-file $notes --target master
 }
 
 Write-Host ""

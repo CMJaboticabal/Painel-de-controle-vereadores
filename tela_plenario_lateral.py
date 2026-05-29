@@ -61,7 +61,7 @@ class TelaPlenarioLateral(QMainWindow):
         self.session_config = SessionConfig()
 
         self.init_ui()
-        self.move_to_second_monitor()
+        self.move_to_public_monitor()
         self.show_session_info()
 
     # ──────────────────────────────────────────────────────
@@ -380,74 +380,12 @@ class TelaPlenarioLateral(QMainWindow):
             self.header_session_label.setText(session_name)
             self.header_year_label.setText(year)
 
-    def move_to_second_monitor(self):
-        app = QApplication.instance()
-        screens = app.screens() if app else []
-
-        if not screens:
-            self.showFullScreen()
-            return
-
-        primary = app.primaryScreen()
-        target_screen = None
-        for screen in screens:
-            if screen != primary:
-                target_screen = screen
-                break
-        if target_screen is None:
-            target_screen = primary or screens[0]
-
-        try:
-            handle = self.windowHandle()
-            if handle:
-                handle.setScreen(target_screen)
-        except Exception as e:
-            print(f"⚠️ Falha ao setar screen handle (lateral): {e}")
-
-        self.setGeometry(target_screen.geometry())
-
-        if sys.platform == "darwin":
-            self.showNormal()
-            self.show()
-            QTimer.singleShot(120, self.showFullScreen)
-            QTimer.singleShot(320, self._retry_secondary_on_macos)
-        else:
-            self.showFullScreen()
-
-        if target_screen != primary:
-            print(f"✅ Tela Lateral → Monitor 2: {target_screen.name()}")
-        else:
-            print("⚠️  Apenas um monitor. Tela Lateral no monitor principal.")
-
-    def _retry_secondary_on_macos(self, attempt=1):
-        """Retry curto para estabilizar fullscreen no monitor secundário no macOS."""
-        if sys.platform != "darwin" or attempt > 4:
-            return
-
-        app = QApplication.instance()
-        if not app:
-            return
-        screens = app.screens()
-        if len(screens) < 2:
-            return
-
-        primary = app.primaryScreen()
-        target_screen = next((s for s in screens if s != primary), screens[1])
-        current_screen = self.screen()
-        if current_screen == target_screen:
-            return
-
-        try:
-            handle = self.windowHandle()
-            if handle:
-                handle.setScreen(target_screen)
-        except Exception:
-            pass
-
-        self.showNormal()
-        self.setGeometry(target_screen.geometry())
-        self.showFullScreen()
-        QTimer.singleShot(180, lambda: self._retry_secondary_on_macos(attempt + 1))
+    def move_to_public_monitor(self):
+        """Exibe em fullscreen no monitor configurado (padrão: monitor 2)."""
+        from display_utils import apply_public_screen_fullscreen
+        apply_public_screen_fullscreen(
+            self, self.session_config, "Tela do Plenário (lateral)"
+        )
 
     def resolve_secondary_background_path(self):
         """Resolve caminho da imagem de fundo com fallback robusto (Windows/macOS)."""

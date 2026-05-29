@@ -670,6 +670,26 @@ class VereadoresAdminDialog(QDialog):
         """)
         tela_layout.addRow("Tipo de Tela:", self.combo_screen_type)
 
+        self.combo_public_monitor = QComboBox()
+        self.combo_public_monitor.setObjectName("comboPublicMonitor")
+        self.combo_public_monitor.setMinimumHeight(40)
+        self.combo_public_monitor.setStyleSheet(self.combo_screen_type.styleSheet())
+        self._refresh_public_monitor_combo()
+
+        btn_refresh_monitors = QPushButton("🔄 Atualizar lista de monitores")
+        btn_refresh_monitors.clicked.connect(self._refresh_public_monitor_combo)
+        monitor_row = QHBoxLayout()
+        monitor_row.addWidget(self.combo_public_monitor, 1)
+        monitor_row.addWidget(btn_refresh_monitors)
+        tela_layout.addRow("Monitor do Público:", monitor_row)
+
+        monitor_hint = QLabel(
+            "Padrão: Monitor 2. Com 3+ monitores, escolha onde projetar a tela do plenário."
+        )
+        monitor_hint.setStyleSheet("color: rgba(200,200,255,0.6); font-size: 12px; font-style: italic;")
+        monitor_hint.setWordWrap(True)
+        tela_layout.addRow("", monitor_hint)
+
         # Imagem de fundo da tela secundária
         bg_layout = QHBoxLayout()
         current_bg = self.session_config.get_secondary_background_path()
@@ -950,6 +970,28 @@ class VereadoresAdminDialog(QDialog):
             else:
                  QMessageBox.warning(self, "Aviso", "Arduino desconectado! Conecte primeiro.")
                  
+    def _refresh_public_monitor_combo(self):
+        """Preenche o combo com monitores conectados (ordem esquerda → direita)."""
+        from display_utils import list_screen_choices
+
+        saved_index = self.session_config.get_public_screen_index()
+        self.combo_public_monitor.clear()
+
+        choices = list_screen_choices(QApplication.instance())
+        if not choices:
+            self.combo_public_monitor.addItem("Nenhum monitor detectado", 0)
+            self.combo_public_monitor.setEnabled(False)
+            return
+
+        self.combo_public_monitor.setEnabled(True)
+        for index, label in choices:
+            self.combo_public_monitor.addItem(label, index)
+
+        pick = saved_index if 0 <= saved_index < len(choices) else min(1, len(choices) - 1)
+        idx = self.combo_public_monitor.findData(pick)
+        if idx >= 0:
+            self.combo_public_monitor.setCurrentIndex(idx)
+
     def exportar_backup(self):
         """Exportar o arquivo session_config.json para backup"""
         import shutil
@@ -1033,6 +1075,10 @@ class VereadoresAdminDialog(QDialog):
         screen_type = self.combo_screen_type.currentData()
         if screen_type:
             self.session_config.set_secondary_screen_type(screen_type)
+
+        monitor_idx = self.combo_public_monitor.currentData()
+        if monitor_idx is not None:
+            self.session_config.set_public_screen_index(int(monitor_idx))
         
         if show_msg:
             QMessageBox.information(self, "Sucesso", "Configurações salvas com sucesso!")

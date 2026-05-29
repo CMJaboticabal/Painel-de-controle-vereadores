@@ -1872,6 +1872,8 @@ class PainelPresidente(QMainWindow):
                 tela.update_header()
                 if not tela.timer_started:
                     tela.show_session_info()
+                if hasattr(tela, 'move_to_public_monitor'):
+                    tela.move_to_public_monitor()
                     
         self.sync_tela_plenario()
         print("✅ Configuração da sessão atualizada nas telas do plenário")
@@ -1924,52 +1926,25 @@ class PainelPresidente(QMainWindow):
         self._open_secondary_configured_with_layout_fallback()
 
     def _position_window_on_secondary_with_fallback(self, window, window_name, retry=0):
-        """Posicionar janela no monitor secundário com fallback para macOS."""
+        """Posicionar janela no monitor configurado para a tela do público."""
         if not window:
             return
+
+        from display_utils import apply_public_screen_fullscreen, resolve_public_screen
 
         app = QApplication.instance()
         if app is None:
             return
 
-        screens = app.screens()
-        if len(screens) < 2:
-            print(f"⚠️ {window_name}: apenas um monitor detectado.")
+        target_screen = resolve_public_screen(session_config=self.session_config, app=app)
+        if not target_screen:
             return
 
-        primary = app.primaryScreen()
-        target_screen = None
-        for screen in screens:
-            if screen != primary:
-                target_screen = screen
-                break
-        if target_screen is None:
-            target_screen = screens[1]
+        if hasattr(window, "move_to_public_monitor"):
+            window.move_to_public_monitor()
+            return
 
-        try:
-            handle = window.windowHandle()
-            if handle:
-                handle.setScreen(target_screen)
-
-            # Alguns ambientes no mac ignoram setScreen na primeira tentativa.
-            window.setGeometry(target_screen.geometry())
-            window.showFullScreen()
-
-            current_screen = window.screen()
-            if current_screen == target_screen:
-                print(f"✅ {window_name}: fallback de monitor aplicado ({target_screen.name()}).")
-                return
-
-            if retry < 4:
-                delay_ms = 150 * (retry + 1)
-                QTimer.singleShot(
-                    delay_ms,
-                    lambda w=window, n=window_name, r=retry + 1: self._position_window_on_secondary_with_fallback(w, n, r)
-                )
-            else:
-                print(f"⚠️ {window_name}: não foi possível fixar no monitor secundário após retries.")
-        except Exception as e:
-            print(f"⚠️ {window_name}: erro ao aplicar fallback de monitor ({e}).")
+        apply_public_screen_fullscreen(window, self.session_config, window_name)
 
     def _open_secondary_configured_with_layout_fallback(self):
         """Abrir tela secundária com fallback entre layouts padrão/lateral."""

@@ -9,7 +9,10 @@ venv/
 env/
 ENV/
 build/
-Output/
+# Instaladores antigos nao versionar; apenas v1.7.8+ via release ou git add -f
+Output/Instalador_PainelTribuna_v1.[0-7]*.exe
+Output/Instalador_PainelTribuna_v1.7.[0-7].exe
+PainelControleTribuna-v*.zip
 develop-eggs/
 dist/
 downloads/
